@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeícMatch — Simulador de Troca Inteligente</title>
+  <title>VeícMatch — Já sei qual carro quero</title>
   <style>
     :root {
       --bg: #f3f5f8;
@@ -173,6 +173,8 @@
       line-height: 1.45;
     }
 
+    #dadosCarroAtual { border: 0; padding: 0; margin: 0; min-inline-size: 0; }
+
     #resultado { display: none; }
 
     .summary-box {
@@ -265,23 +267,69 @@
   <div class="container">
     <header>
       <h1>VeícMatch</h1>
-      <p>Selecione seu veículo na troca, informe checklist, débitos e parcela e descubra o Match real.</p>
+      <p>Já sabe qual carro quer? Escolha o modelo e veja as opções nas lojas parceiras próximas de você.</p>
     </header>
 
     <form id="matchForm">
-      <!-- BLOCO 1: CARRO ATUAL E CHECKLIST COMPLETO -->
+      <!-- BLOCO 1: CARRO DESEJADO -->
       <div class="card">
-        <div class="section-title"><span class="badge">1</span> Seu carro na troca</div>
+        <div class="section-title"><span class="badge">1</span> Carro que você procura</div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label for="desejadoMarca">Marca desejada</label>
+            <select id="desejadoMarca" required>
+              <option value="">Carregando marcas...</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="desejadoModelo">Modelo desejado</label>
+            <select id="desejadoModelo" disabled required>
+              <option value="">Selecione a marca primeiro</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label for="desejadoAnoMin">Ano mínimo desejado</label>
+            <select id="desejadoAnoMin">
+              <option value="">Qualquer ano</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="desejadoVersao">Versão desejada (opcional)</label>
+            <select id="desejadoVersao" disabled>
+              <option value="">Qualquer versão</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="cidadeCliente">Em qual cidade do RS você está?</label>
+          <input type="text" id="cidadeCliente" list="municipiosRS" placeholder="Ex.: São Leopoldo" aria-describedby="ajudaCidade" required />
+          <datalist id="municipiosRS"></datalist>
+          <div class="helper" id="ajudaCidade">Usamos sua cidade para mostrar primeiro as lojas mais próximas.</div>
+        </div>
+
+      </div>
+
+      <!-- BLOCO 2: CARRO ATUAL E CHECKLIST COMPLETO -->
+      <div class="card">
+        <div class="section-title"><span class="badge">2</span> Veículo na troca</div>
 
         <div class="field">
           <label for="temCarro">Você vai dar um veículo na troca?</label>
-          <select id="temCarro" name="temCarro">
-            <option value="sim" selected>Sim, tenho um carro para troca</option>
+          <select id="temCarro" name="temCarro" required>
+            <option value="" selected disabled>Selecione uma opção</option>
+            <option value="sim">Sim, tenho um carro para troca</option>
             <option value="nao">Não, compra sem carro na troca</option>
           </select>
         </div>
 
-        <div id="dadosCarroAtual">
+        <fieldset id="dadosCarroAtual" hidden disabled>
           <div class="sub-title">Dados básicos do veículo</div>
 
           <div class="grid-2">
@@ -414,18 +462,18 @@
             <input type="number" id="valorDebitosDoc" min="0" step="50" value="0" placeholder="0 se tudo estiver pago" />
             <div class="helper">Some IPVA em aberto/parcelas, licenciamento e multas caso existam.</div>
           </div>
-        </div>
+        </fieldset>
       </div>
 
-      <!-- BLOCO 2: CONDIÇÃO FINANCEIRA -->
+      <!-- BLOCO 3: CONDIÇÃO FINANCEIRA -->
       <div class="card">
-        <div class="section-title"><span class="badge">2</span> Capacidade de pagamento</div>
+        <div class="section-title"><span class="badge">3</span> Capacidade de pagamento</div>
 
         <div class="grid-2">
           <div class="field">
-            <label for="entradaExtra">Dinheiro extra para entrada (R$)</label>
+            <label for="entradaExtra">Entrada em dinheiro (R$)</label>
             <input type="number" id="entradaExtra" min="0" step="500" value="0" placeholder="Ex.: 10000" />
-            <div class="helper">Informe 0 se usar apenas seu carro.</div>
+            <div class="helper">Informe 0 se não houver entrada em dinheiro.</div>
           </div>
 
           <div class="field">
@@ -434,57 +482,13 @@
             <div class="helper">Verificamos automaticamente qual prazo atende sua parcela.</div>
           </div>
         </div>
-      </div>
-
-      <!-- BLOCO 3: CARRO DESEJADO -->
-      <div class="card">
-        <div class="section-title"><span class="badge">3</span> Carro que você procura</div>
-
-        <div class="grid-2">
-          <div class="field">
-            <label for="desejadoMarca">Marca desejada</label>
-            <select id="desejadoMarca" required>
-              <option value="">Carregando marcas...</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="desejadoModelo">Modelo desejado</label>
-            <select id="desejadoModelo" disabled required>
-              <option value="">Selecione a marca primeiro</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="grid-2">
-          <div class="field">
-            <label for="desejadoAnoMin">Ano mínimo desejado</label>
-            <select id="desejadoAnoMin">
-              <option value="">Qualquer ano</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="desejadoVersao">Versão desejada (opcional)</label>
-            <select id="desejadoVersao" disabled>
-              <option value="">Qualquer versão</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="field">
-          <label for="cidadeCliente">Em qual cidade do RS você está?</label>
-          <input type="text" id="cidadeCliente" list="municipiosRS" placeholder="Ex.: São Leopoldo" aria-describedby="ajudaCidade" required />
-          <datalist id="municipiosRS"></datalist>
-          <div class="helper" id="ajudaCidade">Usamos sua cidade para mostrar primeiro as lojas mais próximas.</div>
-        </div>
 
         <div class="field">
           <label for="whatsappCliente">Seu WhatsApp para receber as opções (opcional)</label>
           <input type="tel" id="whatsappCliente" placeholder="(51) 99999-9999" />
         </div>
 
-        <button type="submit" class="btn-primary" id="btnBuscar">Buscar meu Match de Troca</button>
+        <button type="submit" class="btn-primary" id="btnBuscar">Buscar meu Match</button>
 
       </div>
     </form>
@@ -1117,13 +1121,17 @@
       "situacaoQuitacao", "valorDebitosDoc"
     ];
 
-    temCarroEl.addEventListener("change", () => {
+    function atualizarCamposTroca() {
       const ativo = temCarroEl.value === "sim";
-      dadosCarroAtualEl.style.display = ativo ? "block" : "none";
+      dadosCarroAtualEl.hidden = !ativo;
+      dadosCarroAtualEl.disabled = !ativo;
       camposObrigatoriosTroca.forEach(id => {
         document.getElementById(id).required = ativo;
       });
-    });
+    }
+
+    temCarroEl.addEventListener("change", atualizarCamposTroca);
+    atualizarCamposTroca();
 
     situacaoQuitacaoEl.addEventListener("change", () => {
       const financiado = situacaoQuitacaoEl.value === "financiado";
@@ -1182,8 +1190,9 @@
       }
       cidadeClienteEl.value = cidade[0];
       const btn = document.getElementById("btnBuscar");
+      const rotuloBotao = btn.textContent;
       btn.disabled = true;
-      btn.textContent = "Avaliando troca e cruzando estoque...";
+      btn.textContent = "Buscando carros no estoque…";
 
       const temCarro = temCarroEl.value === "sim";
       const situacaoQuitacao = temCarro ? situacaoQuitacaoEl.value : "";
@@ -1225,7 +1234,7 @@
         alert("Não foi possível conectar com a base agora. Tente novamente em instantes.");
       } finally {
         btn.disabled = false;
-        btn.textContent = "Buscar meu Match de Troca";
+        btn.textContent = rotuloBotao;
       }
     });
 
