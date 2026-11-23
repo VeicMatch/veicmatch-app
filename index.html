@@ -100,14 +100,6 @@
       letter-spacing: 0.4px;
     }
 
-    .badge {
-      background: var(--primary);
-      color: #fff;
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: 999px;
-    }
-
     .grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -233,6 +225,7 @@
       margin: 0 0 6px;
       font-size: 15.5px;
       color: var(--primary);
+      text-transform: uppercase;
     }
 
     .match-meta {
@@ -268,6 +261,7 @@
       cursor: pointer;
       font-weight: 600;
       margin-bottom: 10px;
+      text-transform: uppercase;
     }
 
     .btn-ajustar-busca {
@@ -297,7 +291,7 @@
     <form id="matchForm">
       <!-- BLOCO 1: CARRO DESEJADO -->
       <div class="card">
-        <div class="section-title"><span class="badge">1</span> Carro que você procura</div>
+        <div class="section-title">QUAL CARRO VOCÊ ESTÁ PROCURANDO?</div>
 
         <div class="grid-2">
           <div class="field">
@@ -343,7 +337,7 @@
 
       <!-- BLOCO 2: CARRO ATUAL E CHECKLIST COMPLETO -->
       <div class="card">
-        <div class="section-title"><span class="badge">2</span> Veículo na troca</div>
+        <div class="section-title">VEÍCULO NA TROCA</div>
 
         <div class="field">
           <label for="temCarro">Você vai dar um veículo na troca?</label>
@@ -492,7 +486,7 @@
 
       <!-- BLOCO 3: CONDIÇÃO FINANCEIRA -->
       <div class="card">
-        <div class="section-title"><span class="badge">3</span> Capacidade de pagamento</div>
+        <div class="section-title">CAPACIDADE DE PAGAMENTO</div>
 
         <div class="grid-2">
           <div class="field">
@@ -509,8 +503,8 @@
         </div>
 
         <div class="field">
-          <label for="nomeCliente">Seu nome (opcional)</label>
-          <input type="text" id="nomeCliente" autocomplete="name" maxlength="120" />
+          <label for="nomeCliente">Seu nome</label>
+          <input type="text" id="nomeCliente" autocomplete="name" maxlength="120" required pattern=".*\S.*" title="Informe seu nome" />
         </div>
 
         <div class="field">
@@ -524,7 +518,7 @@
     </form>
 
     <div class="card" id="resultado">
-      <div class="section-title">Resultado da sua simulação</div>
+      <div class="section-title">RESULTADO DA SUA SIMULAÇÃO</div>
       <div id="resumoSimulacao"></div>
       <div class="summary-box" id="resumoFinanceiro"></div>
       <div id="listaMatches"></div>
@@ -1309,7 +1303,7 @@
         const cartao = document.createElement("section");
         cartao.className = "pre-avaliacao";
         const titulo = document.createElement("h3");
-        titulo.textContent = "Pré-avaliação do seu carro";
+        titulo.textContent = "PRÉ-AVALIAÇÃO DO SEU CARRO";
         const nome = document.createElement("p");
         nome.textContent = carroNaTroca;
         cartao.append(titulo, nome);
