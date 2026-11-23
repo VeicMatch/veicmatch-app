@@ -458,6 +458,13 @@
         </div>
 
         <div class="field">
+          <label for="cidadeCliente">Em qual cidade do RS você está?</label>
+          <input type="text" id="cidadeCliente" list="municipiosRS" placeholder="Ex.: São Leopoldo" aria-describedby="ajudaCidade" required />
+          <datalist id="municipiosRS"></datalist>
+          <div class="helper" id="ajudaCidade">Usamos sua cidade para mostrar primeiro as lojas mais próximas.</div>
+        </div>
+
+        <div class="field">
           <label for="whatsappCliente">Seu WhatsApp para receber as opções (opcional)</label>
           <input type="tel" id="whatsappCliente" placeholder="(51) 99999-9999" />
         </div>
@@ -478,6 +485,508 @@
   </div>
 
   <script>
+    // Coordenadas das sedes municipais do RS — IBGE, serviço cartográfico do Estado do RS.
+    // https://zee.rs.gov.br/server/rest/services/1_RSAGUAS/Mapa_basico_SIGRSAGUA/FeatureServer/1
+    const SEDES_MUNICIPAIS_RS = [
+      ["Aceguá", -31.86742, -54.16383],
+      ["Água Santa", -28.17795, -52.03516],
+      ["Agudo", -29.64494, -53.24],
+      ["Ajuricaba", -28.23894, -53.771],
+      ["Alecrim", -27.65492, -54.76402],
+      ["Alegrete", -29.78292, -55.79199],
+      ["Alegria", -27.83284, -54.05758],
+      ["Almirante Tamandaré do Sul", -28.11432, -52.91379],
+      ["Alpestre", -27.25069, -53.03532],
+      ["Alto Alegre", -28.77294, -52.99],
+      ["Alto Feliz", -29.38017, -51.31358],
+      ["Alvorada", -29.99756, -51.0778],
+      ["Amaral Ferrador", -30.87492, -52.25304],
+      ["Ametista do Sul", -27.36085, -53.18459],
+      ["André da Rocha", -28.63174, -51.57175],
+      ["Anta Gorda", -28.96928, -52.00906],
+      ["Antônio Prado", -28.85368, -51.28124],
+      ["Arambaré", -30.91663, -51.50291],
+      ["Araricá", -29.61393, -50.92499],
+      ["Aratiba", -27.39485, -52.30225],
+      ["Arroio do Meio", -29.40094, -51.945],
+      ["Arroio do Padre", -31.44257, -52.42228],
+      ["Arroio do Sal", -29.55088, -49.88912],
+      ["Arroio do Tigre", -29.33356, -53.08643],
+      ["Arroio dos Ratos", -30.07694, -51.72902],
+      ["Arroio Grande", -32.23791, -53.08703],
+      ["Arvorezinha", -28.8715, -52.18075],
+      ["Augusto Pestana", -28.51438, -53.99263],
+      ["Áurea", -27.69671, -52.05431],
+      ["Bagé", -31.33091, -54.10703],
+      ["Balneário Pinhal", -30.24696, -50.23303],
+      ["Barão", -29.37633, -51.49939],
+      ["Barão de Cotegipe", -27.62276, -52.37859],
+      ["Barão do Triunfo", -30.39031, -51.73778],
+      ["Barra do Guarita", -27.19054, -53.712],
+      ["Barra do Quaraí", -30.20691, -57.55498],
+      ["Barra do Ribeiro", -30.29655, -51.30517],
+      ["Barra do Rio Azul", -27.40896, -52.41363],
+      ["Barra Funda", -27.92291, -53.03771],
+      ["Barracão", -27.67648, -51.45737],
+      ["Barros Cassal", -29.09294, -52.583],
+      ["Benjamin Constant do Sul", -27.50852, -52.60222],
+      ["Bento Gonçalves", -29.15516, -51.52433],
+      ["Boa Vista das Missões", -27.66277, -53.31525],
+      ["Boa Vista do Buricá", -27.66893, -54.10998],
+      ["Boa Vista do Cadeado", -28.57798, -53.81329],
+      ["Boa Vista do Incra", -28.81865, -53.38664],
+      ["Boa Vista do Sul", -29.34947, -51.67647],
+      ["Bom Jesus", -28.67184, -50.43362],
+      ["Bom Princípio", -29.47954, -51.35346],
+      ["Bom Progresso", -27.55037, -53.86528],
+      ["Bom Retiro do Sul", -29.59715, -51.93752],
+      ["Boqueirão do Leão", -29.30112, -52.42998],
+      ["Bossoroca", -28.72993, -54.89999],
+      ["Bozano", -28.36794, -53.77069],
+      ["Braga", -27.61754, -53.74005],
+      ["Brochier", -29.55271, -51.59639],
+      ["Butiá", -30.11994, -51.96202],
+      ["Caçapava do Sul", -30.51192, -53.49102],
+      ["Cacequi", -29.88388, -54.82497],
+      ["Cachoeira do Sul", -30.03894, -52.894],
+      ["Cachoeirinha", -29.93242, -51.07709],
+      ["Cacique Doble", -27.76901, -51.66679],
+      ["Caibaté", -28.28794, -54.638],
+      ["Caiçara", -27.27705, -53.43096],
+      ["Camaquã", -30.85523, -51.80913],
+      ["Camargo", -28.58788, -52.20392],
+      ["Cambará do Sul", -29.04782, -50.14495],
+      ["Campestre da Serra", -28.79634, -51.09512],
+      ["Campina das Missões", -27.98892, -54.83897],
+      ["Campinas do Sul", -27.71751, -52.62462],
+      ["Campo Bom", -29.68109, -51.05284],
+      ["Campo Novo", -27.67658, -53.80664],
+      ["Campos Borges", -28.88594, -52.999],
+      ["Candelária", -29.66894, -52.789],
+      ["Cândido Godói", -27.95197, -54.75207],
+      ["Candiota", -31.55783, -53.67302],
+      ["Canela", -29.36598, -50.81596],
+      ["Canguçu", -31.39486, -52.67604],
+      ["Canoas", -29.91569, -51.18212],
+      ["Canudos do Vale", -29.32307, -52.23772],
+      ["Capão Bonito do Sul", -28.12915, -51.39638],
+      ["Capão da Canoa", -29.7609, -50.03006],
+      ["Capão do Cipó", -28.91956, -54.55619],
+      ["Capão do Leão", -31.76853, -52.50191],
+      ["Capela de Santana", -29.69197, -51.31812],
+      ["Capitão", -29.26895, -51.989],
+      ["Capivari do Sul", -30.14495, -50.51503],
+      ["Caraá", -29.78989, -50.4351],
+      ["Carazinho", -28.28394, -52.786],
+      ["Carlos Barbosa", -29.29795, -51.504],
+      ["Carlos Gomes", -27.71612, -51.91213],
+      ["Casca", -28.56576, -51.97712],
+      ["Caseiros", -28.27121, -51.69067],
+      ["Catuípe", -28.24994, -54.012],
+      ["Caxias do Sul", -29.14902, -51.18584],
+      ["Centenário", -27.76084, -52.00098],
+      ["Cerrito", -31.85324, -52.81207],
+      ["Cerro Branco", -29.65413, -52.9367],
+      ["Cerro Grande", -27.6086, -53.1655],
+      ["Cerro Grande do Sul", -30.59669, -51.75076],
+      ["Cerro Largo", -28.14894, -54.738],
+      ["Chapada", -28.05494, -53.068],
+      ["Charqueadas", -29.96827, -51.63203],
+      ["Charrua", -27.95448, -52.01579],
+      ["Chiapetta", -27.92041, -53.94107],
+      ["Chuí", -33.69091, -53.45702],
+      ["Chuvisca", -30.75766, -51.97885],
+      ["Cidreira", -30.16808, -50.20198],
+      ["Ciríaco", -28.34377, -51.87482],
+      ["Colinas", -29.38578, -51.86875],
+      ["Colorado", -28.52394, -52.994],
+      ["Condor", -28.20794, -53.487],
+      ["Constantina", -27.73316, -52.99399],
+      ["Coqueiro Baixo", -29.17829, -52.0927],
+      ["Coqueiros do Sul", -28.11894, -52.783],
+      ["Coronel Barros", -28.38294, -54.066],
+      ["Coronel Bicaco", -27.71696, -53.70799],
+      ["Coronel Pilar", -29.27172, -51.68328],
+      ["Cotiporã", -28.99402, -51.69697],
+      ["Coxilha", -28.127, -52.29681],
+      ["Crissiumal", -27.49994, -54.10096],
+      ["Cristal", -31.00292, -52.04999],
+      ["Cristal do Sul", -27.45521, -53.24827],
+      ["Cruz Alta", -28.63894, -53.606],
+      ["Cruzaltense", -27.66726, -52.6488],
+      ["Cruzeiro do Sul", -29.51294, -51.985],
+      ["David Canabarro", -28.38847, -51.847],
+      ["Derrubadas", -27.26536, -53.86174],
+      ["Dezesseis de Novembro", -28.22511, -55.04831],
+      ["Dilermando de Aguiar", -29.70581, -54.20801],
+      ["Dois Irmãos", -29.58245, -51.0963],
+      ["Dois Irmãos das Missões", -27.65773, -53.53176],
+      ["Dois Lajeados", -28.98583, -51.83752],
+      ["Dom Feliciano", -30.7055, -52.1075],
+      ["Dom Pedrito", -30.9829, -54.67302],
+      ["Dom Pedro de Alcântara", -29.36946, -49.84978],
+      ["Dona Francisca", -29.62194, -53.357],
+      ["Doutor Maurício Cardoso", -27.50586, -54.36106],
+      ["Doutor Ricardo", -29.08595, -51.992],
+      ["Eldorado do Sul", -29.99924, -51.31044],
+      ["Encantado", -29.23884, -51.87376],
+      ["Encruzilhada do Sul", -30.54393, -52.52202],
+      ["Engenho Velho", -27.70851, -52.91222],
+      ["Entre Rios do Sul", -27.53074, -52.73113],
+      ["Entre-Ijuís", -28.35994, -54.268],
+      ["Erebango", -27.85428, -52.30358],
+      ["Erechim", -27.64282, -52.27077],
+      ["Ernestina", -28.49894, -52.573],
+      ["Erval Grande", -27.39214, -52.56933],
+      ["Erval Seco", -27.54982, -53.50831],
+      ["Esmeralda", -28.05699, -51.18944],
+      ["Esperança do Sul", -27.36354, -53.98898],
+      ["Espumoso", -28.72494, -52.85],
+      ["Estação", -27.91383, -52.2598],
+      ["Estância Velha", -29.65427, -51.17221],
+      ["Esteio", -29.85089, -51.17964],
+      ["Estrela", -29.48877, -51.95317],
+      ["Estrela Velha", -29.17694, -53.159],
+      ["Eugênio de Castro", -28.52494, -54.149],
+      ["Fagundes Varela", -28.88196, -51.70248],
+      ["Farroupilha", -29.22113, -51.33191],
+      ["Faxinal do Soturno", -29.57494, -53.445],
+      ["Faxinalzinho", -27.42384, -52.67357],
+      ["Fazenda Vilanova", -29.59085, -51.82381],
+      ["Feliz", -29.45095, -51.306],
+      ["Flores da Cunha", -29.02885, -51.18166],
+      ["Floriano Peixoto", -27.8605, -52.08483],
+      ["Fontoura Xavier", -28.98296, -52.35021],
+      ["Formigueiro", -30.00133, -53.50296],
+      ["Forquetinha", -29.38181, -52.09126],
+      ["Fortaleza dos Valos", -28.79694, -53.223],
+      ["Frederico Westphalen", -27.35825, -53.39506],
+      ["Garibaldi", -29.25673, -51.52042],
+      ["Garruchos", -28.18393, -55.63899],
+      ["Gaurama", -27.58761, -52.10242],
+      ["General Câmara", -29.90494, -51.76001],
+      ["Gentil", -28.43259, -52.03533],
+      ["Getúlio Vargas", -27.88863, -52.22987],
+      ["Giruá", -28.02794, -54.35],
+      ["Glorinha", -29.88022, -50.78322],
+      ["Gramado", -29.37896, -50.87406],
+      ["Gramado dos Loureiros", -27.44423, -52.91822],
+      ["Gramado Xavier", -29.26794, -52.579],
+      ["Gravataí", -29.93614, -51.01674],
+      ["Guabiju", -28.53946, -51.69089],
+      ["Guaíba", -30.11394, -51.32502],
+      ["Guaporé", -28.84844, -51.88917],
+      ["Guarani das Missões", -28.14094, -54.558],
+      ["Harmonia", -29.55117, -51.42026],
+      ["Herval", -32.02391, -53.39603],
+      ["Herveiras", -29.4543, -52.65054],
+      ["Horizontina", -27.62592, -54.30805],
+      ["Hulha Negra", -31.40393, -53.86913],
+      ["Humaitá", -27.56545, -53.96746],
+      ["Ibarama", -29.42092, -53.13287],
+      ["Ibiaçá", -28.05708, -51.85725],
+      ["Ibiraiaras", -28.37003, -51.63692],
+      ["Ibirapuitã", -28.62394, -52.511],
+      ["Ibirubá", -28.62794, -53.09],
+      ["Igrejinha", -29.57396, -50.79009],
+      ["Ijuí", -28.38794, -53.915],
+      ["Ilópolis", -28.92779, -52.12559],
+      ["Imbé", -29.97496, -50.1281],
+      ["Imigrante", -29.35495, -51.777],
+      ["Independência", -27.85071, -54.19101],
+      ["Inhacorá", -27.88301, -54.01697],
+      ["Ipê", -28.81975, -51.28121],
+      ["Ipiranga do Sul", -27.93717, -52.4254],
+      ["Iraí", -27.19269, -53.25666],
+      ["Itaara", -29.60994, -53.765],
+      ["Itacurubi", -28.79835, -55.23582],
+      ["Itapuca", -28.78048, -52.17276],
+      ["Itaqui", -29.12492, -56.55298],
+      ["Itati", -29.48889, -50.10507],
+      ["Itatiba do Sul", -27.38516, -52.45582],
+      ["Ivorá", -29.51995, -53.581],
+      ["Ivoti", -29.61077, -51.16356],
+      ["Jaboticaba", -27.63286, -53.27836],
+      ["Jacuizinho", -29.03382, -53.05947],
+      ["Jacutinga", -27.72922, -52.53653],
+      ["Jaguarão", -32.56591, -53.37603],
+      ["Jaguari", -29.49693, -54.68999],
+      ["Jaquirana", -28.88389, -50.35829],
+      ["Jari", -29.28982, -54.22161],
+      ["Jóia", -28.64694, -54.122],
+      ["Júlio de Castilhos", -29.22695, -53.682],
+      ["Lagoa Bonita do Sul", -29.48925, -53.01396],
+      ["Lagoa dos Três Cantos", -28.57094, -52.858],
+      ["Lagoa Vermelha", -28.21221, -51.52308],
+      ["Lagoão", -29.2231, -52.77204],
+      ["Lajeado", -29.457, -51.96855],
+      ["Lajeado do Bugre", -27.68999, -53.18222],
+      ["Lavras do Sul", -30.81291, -53.89502],
+      ["Liberato Salzano", -27.59994, -53.07277],
+      ["Lindolfo Collor", -29.59695, -51.20901],
+      ["Linha Nova", -29.46795, -51.201],
+      ["Maçambará", -29.14721, -56.06367],
+      ["Machadinho", -27.5677, -51.66868],
+      ["Mampituba", -29.21089, -49.9351],
+      ["Manoel Viana", -29.58893, -55.48299],
+      ["Maquiné", -29.67499, -50.20695],
+      ["Maratá", -29.5496, -51.55577],
+      ["Marau", -28.44196, -52.20619],
+      ["Marcelino Ramos", -27.46424, -51.90894],
+      ["Mariana Pimentel", -30.35293, -51.58303],
+      ["Mariano Moro", -27.3542, -52.14799],
+      ["Marques de Souza", -29.32979, -52.09761],
+      ["Mata", -29.56604, -54.4599],
+      ["Mato Castelhano", -28.2765, -52.19658],
+      ["Mato Leitão", -29.52394, -52.129],
+      ["Mato Queimado", -28.25616, -54.61633],
+      ["Maximiliano de Almeida", -27.6326, -51.80173],
+      ["Minas do Leão", -30.12694, -52.04802],
+      ["Miraguaí", -27.49656, -53.68627],
+      ["Montauri", -28.65394, -52.07718],
+      ["Monte Alegre dos Campos", -28.68303, -50.78312],
+      ["Monte Belo do Sul", -29.16316, -51.63397],
+      ["Montenegro", -29.6872, -51.46041],
+      ["Mormaço", -28.69194, -52.692],
+      ["Morrinhos do Sul", -29.36498, -49.93498],
+      ["Morro Redondo", -31.58793, -52.63303],
+      ["Morro Reuter", -29.53796, -51.08101],
+      ["Mostardas", -31.10694, -50.92103],
+      ["Muçum", -29.16676, -51.87478],
+      ["Muitos Capões", -28.31734, -51.18463],
+      ["Muliterno", -28.33006, -51.76952],
+      ["Não-Me-Toque", -28.45894, -52.821],
+      ["Nicolau Vergueiro", -28.53608, -52.46256],
+      ["Nonoai", -27.36532, -52.77313],
+      ["Nova Alvorada", -28.67469, -52.16689],
+      ["Nova Araçá", -28.65937, -51.75946],
+      ["Nova Bassano", -28.73335, -51.70198],
+      ["Nova Boa Vista", -27.99322, -52.98027],
+      ["Nova Bréscia", -29.21395, -52.028],
+      ["Nova Candelária", -27.60688, -54.10693],
+      ["Nova Esperança do Sul", -29.40993, -54.82898],
+      ["Nova Hartz", -29.5829, -50.90204],
+      ["Nova Pádua", -29.02896, -51.30699],
+      ["Nova Palma", -29.47195, -53.469],
+      ["Nova Petrópolis", -29.36293, -51.08657],
+      ["Nova Prata", -28.78245, -51.61002],
+      ["Nova Ramada", -28.06394, -53.697],
+      ["Nova Roma do Sul", -28.98915, -51.40849],
+      ["Nova Santa Rita", -29.85052, -51.27602],
+      ["Novo Barreiro", -27.90757, -53.11308],
+      ["Novo Cabrais", -29.73494, -52.948],
+      ["Novo Hamburgo", -29.68496, -51.14116],
+      ["Novo Machado", -27.57393, -54.50498],
+      ["Novo Tiradentes", -27.56294, -53.18323],
+      ["Novo Xingu", -27.74787, -53.06056],
+      ["Osório", -29.88687, -50.27006],
+      ["Paim Filho", -27.70905, -51.76158],
+      ["Palmares do Sul", -30.25795, -50.51003],
+      ["Palmeira das Missões", -27.8992, -53.31048],
+      ["Palmitinho", -27.35255, -53.55715],
+      ["Panambi", -28.29294, -53.502],
+      ["Pantano Grande", -30.19093, -52.37402],
+      ["Paraí", -28.59369, -51.78761],
+      ["Paraíso do Sul", -29.73042, -53.17938],
+      ["Pareci Novo", -29.63985, -51.40091],
+      ["Parobé", -29.62899, -50.83497],
+      ["Passa Sete", -29.44737, -52.96532],
+      ["Passo do Sobrado", -29.74794, -52.275],
+      ["Passo Fundo", -28.25956, -52.40695],
+      ["Paulo Bento", -27.70284, -52.42261],
+      ["Paverama", -29.55597, -51.73599],
+      ["Pedras Altas", -31.73279, -53.58389],
+      ["Pedro Osório", -31.86636, -52.82301],
+      ["Pejuçara", -28.42294, -53.656],
+      ["Pelotas", -31.77152, -52.34384],
+      ["Picada Café", -29.45317, -51.13398],
+      ["Pinhal", -27.51289, -53.21589],
+      ["Pinhal da Serra", -27.87511, -51.17003],
+      ["Pinhal Grande", -29.33681, -53.34087],
+      ["Pinheirinho do Vale", -27.21166, -53.61659],
+      ["Pinheiro Machado", -31.57794, -53.38113],
+      ["Pinto Bandeira", -29.09718, -51.45055],
+      ["Pirapó", -28.04494, -55.19899],
+      ["Piratini", -31.44786, -53.10408],
+      ["Planalto", -27.3341, -53.05613],
+      ["Poço das Antas", -29.44995, -51.671],
+      ["Pontão", -28.05894, -52.677],
+      ["Ponte Preta", -27.65838, -52.49019],
+      ["Portão", -29.69819, -51.23683],
+      ["Porto Alegre", -30.0378, -51.22705],
+      ["Porto Lucena", -27.85594, -55.01614],
+      ["Porto Mauá", -27.57498, -54.66803],
+      ["Porto Vera Cruz", -27.73597, -54.90095],
+      ["Porto Xavier", -27.90594, -55.13799],
+      ["Pouso Novo", -29.17095, -52.208],
+      ["Presidente Lucena", -29.51704, -51.1774],
+      ["Progresso", -29.24298, -52.31123],
+      ["Protásio Alves", -28.75875, -51.47396],
+      ["Putinga", -29.00101, -52.15664],
+      ["Quaraí", -30.38789, -56.45101],
+      ["Quatro Irmãos", -27.82251, -52.44291],
+      ["Quevedos", -29.35295, -54.07197],
+      ["Quinze de Novembro", -28.74194, -53.095],
+      ["Redentora", -27.66222, -53.64019],
+      ["Relvado", -29.11205, -52.06137],
+      ["Restinga Seca", -29.81294, -53.375],
+      ["Rio dos Índios", -27.29979, -52.84069],
+      ["Rio Grande", -32.05701, -52.14917],
+      ["Rio Pardo", -29.98966, -52.37806],
+      ["Riozinho", -29.64093, -50.45306],
+      ["Roca Sales", -29.2894, -51.87088],
+      ["Rodeio Bonito", -27.47324, -53.17014],
+      ["Rolador", -28.25638, -54.81747],
+      ["Rolante", -29.65097, -50.57615],
+      ["Ronda Alta", -27.78114, -52.80783],
+      ["Rondinha", -27.82697, -52.90736],
+      ["Roque Gonzales", -28.13094, -55.02599],
+      ["Rosário do Sul", -30.25791, -54.91401],
+      ["Sagrada Família", -27.70589, -53.13541],
+      ["Saldanha Marinho", -28.39287, -53.09554],
+      ["Salto do Jacuí", -29.08794, -53.213],
+      ["Salvador das Missões", -28.12594, -54.835],
+      ["Salvador do Sul", -29.44188, -51.51154],
+      ["Sananduva", -27.95083, -51.81029],
+      ["Sant'Ana do Livramento", -30.89089, -55.53302],
+      ["Santa Bárbara do Sul", -28.35794, -53.247],
+      ["Santa Cecília do Sul", -28.16381, -51.92983],
+      ["Santa Clara do Sul", -29.46894, -52.088],
+      ["Santa Cruz do Sul", -29.71794, -52.426],
+      ["Santa Margarida do Sul", -30.33957, -54.07974],
+      ["Santa Maria", -29.68394, -53.807],
+      ["Santa Maria do Herval", -29.49797, -50.99305],
+      ["Santa Rosa", -27.87091, -54.48102],
+      ["Santa Tereza", -29.1705, -51.73423],
+      ["Santa Vitória do Palmar", -33.51891, -53.36802],
+      ["Santana da Boa Vista", -30.87192, -53.11502],
+      ["Santiago", -29.19178, -54.86704],
+      ["Santo Ângelo", -28.29894, -54.263],
+      ["Santo Antônio da Patrulha", -29.81791, -50.52006],
+      ["Santo Antônio das Missões", -28.51094, -55.22799],
+      ["Santo Antônio do Palma", -28.49342, -52.02512],
+      ["Santo Antônio do Planalto", -28.39594, -52.691],
+      ["Santo Augusto", -27.84972, -53.77796],
+      ["Santo Cristo", -27.82392, -54.66298],
+      ["Santo Expedito do Sul", -27.90912, -51.64255],
+      ["São Borja", -28.66093, -56.00398],
+      ["São Domingos do Sul", -28.53056, -51.88923],
+      ["São Francisco de Assis", -29.54994, -55.131],
+      ["São Francisco de Paula", -29.44791, -50.584],
+      ["São Gabriel", -30.33592, -54.32001],
+      ["São Jerônimo", -29.96454, -51.72119],
+      ["São João da Urtiga", -27.81716, -51.82999],
+      ["São João do Polêsine", -29.61394, -53.446],
+      ["São Jorge", -28.5002, -51.7046],
+      ["São José das Missões", -27.77848, -53.11969],
+      ["São José do Herval", -29.04395, -52.296],
+      ["São José do Hortêncio", -29.52469, -51.24858],
+      ["São José do Inhacorá", -27.72489, -54.129],
+      ["São José do Norte", -32.01492, -52.04204],
+      ["São José do Ouro", -27.77367, -51.59474],
+      ["São José do Sul", -29.54226, -51.4879],
+      ["São José dos Ausentes", -28.74838, -50.06487],
+      ["São Leopoldo", -29.76073, -51.15167],
+      ["São Lourenço do Sul", -31.36499, -51.97792],
+      ["São Luiz Gonzaga", -28.40794, -54.961],
+      ["São Marcos", -28.96783, -51.06978],
+      ["São Martinho", -27.70867, -53.96563],
+      ["São Martinho da Serra", -29.53794, -53.855],
+      ["São Miguel das Missões", -28.55142, -54.55387],
+      ["São Nicolau", -28.18294, -55.26699],
+      ["São Paulo das Missões", -28.02094, -54.93599],
+      ["São Pedro da Serra", -29.42043, -51.51075],
+      ["São Pedro das Missões", -27.77125, -53.24737],
+      ["São Pedro do Butiá", -28.12394, -54.887],
+      ["São Pedro do Sul", -29.62087, -54.1791],
+      ["São Sebastião do Caí", -29.57173, -51.35909],
+      ["São Sepé", -30.16093, -53.56501],
+      ["São Valentim", -27.56049, -52.52516],
+      ["São Valentim do Sul", -29.04695, -51.765],
+      ["São Valério do Sul", -27.78855, -53.93602],
+      ["São Vendelino", -29.38362, -51.36871],
+      ["São Vicente do Sul", -29.69185, -54.67902],
+      ["Sapiranga", -29.63801, -51.00696],
+      ["Sapucaia do Sul", -29.82233, -51.14742],
+      ["Sarandi", -27.94268, -52.92146],
+      ["Seberi", -27.48368, -53.39932],
+      ["Sede Nova", -27.63412, -53.95037],
+      ["Segredo", -29.34355, -52.97998],
+      ["Selbach", -28.62894, -52.953],
+      ["Senador Salgado Filho", -28.028, -54.54477],
+      ["Sentinela do Sul", -30.61315, -51.57939],
+      ["Serafina Corrêa", -28.71398, -51.93116],
+      ["Sério", -29.38294, -52.269],
+      ["Sertão", -27.98441, -52.25816],
+      ["Sertão Santana", -30.4642, -51.60776],
+      ["Sete de Setembro", -28.13094, -54.463],
+      ["Severiano de Almeida", -27.43225, -52.11591],
+      ["Silveira Martins", -29.64194, -53.586],
+      ["Sinimbu", -29.53894, -52.522],
+      ["Sobradinho", -29.41598, -53.0291],
+      ["Soledade", -28.82202, -52.49358],
+      ["Tabaí", -29.68951, -51.72047],
+      ["Tapejara", -28.06711, -52.01053],
+      ["Tapera", -28.62594, -52.87],
+      ["Tapes", -30.67498, -51.40092],
+      ["Taquara", -29.65085, -50.78102],
+      ["Taquari", -29.79994, -51.864],
+      ["Taquaruçu do Sul", -27.40101, -53.46851],
+      ["Tavares", -31.28907, -51.09171],
+      ["Tenente Portela", -27.37057, -53.75724],
+      ["Terra de Areia", -29.58487, -50.07103],
+      ["Teutônia", -29.44795, -51.806],
+      ["Tio Hugo", -28.5794, -52.5992],
+      ["Tiradentes do Sul", -27.39795, -54.084],
+      ["Toropi", -29.47786, -54.22796],
+      ["Torres", -29.33589, -49.73043],
+      ["Tramandaí", -29.98493, -50.13397],
+      ["Travesseiro", -29.29684, -52.05701],
+      ["Três Arroios", -27.49965, -52.14789],
+      ["Três Cachoeiras", -29.45595, -49.92399],
+      ["Três Coroas", -29.51697, -50.77796],
+      ["Três de Maio", -27.77311, -54.23998],
+      ["Três Forquilhas", -29.53696, -50.06448],
+      ["Três Palmeiras", -27.61646, -52.84198],
+      ["Três Passos", -27.45482, -53.9321],
+      ["Trindade do Sul", -27.52155, -52.89678],
+      ["Triunfo", -29.94294, -51.71801],
+      ["Tucunduva", -27.65693, -54.44001],
+      ["Tunas", -29.10294, -52.956],
+      ["Tupanci do Sul", -27.92362, -51.53829],
+      ["Tupanciretã", -29.08094, -53.836],
+      ["Tupandi", -29.4921, -51.41546],
+      ["Tuparendi", -27.75597, -54.48202],
+      ["Turuçu", -31.42191, -52.17804],
+      ["Ubiretama", -28.04594, -54.681],
+      ["União da Serra", -28.75292, -52.01529],
+      ["Unistalda", -29.04687, -55.14997],
+      ["Uruguaiana", -29.75491, -57.08797],
+      ["Vacaria", -28.50821, -50.93986],
+      ["Vale do Sol", -29.60379, -52.68634],
+      ["Vale Real", -29.39817, -51.25342],
+      ["Vale Verde", -29.78694, -52.184],
+      ["Vanini", -28.47413, -51.84512],
+      ["Venâncio Aires", -29.60594, -52.192],
+      ["Vera Cruz", -29.71494, -52.506],
+      ["Veranópolis", -28.93512, -51.54838],
+      ["Vespasiano Corrêa", -29.06795, -51.859],
+      ["Viadutos", -27.57107, -52.02095],
+      ["Viamão", -30.08095, -51.02302],
+      ["Vicente Dutra", -27.16762, -53.4047],
+      ["Victor Graeff", -28.55994, -52.748],
+      ["Vila Flores", -28.86187, -51.55118],
+      ["Vila Lângaro", -28.10706, -52.14596],
+      ["Vila Maria", -28.5328, -52.15247],
+      ["Vila Nova do Sul", -30.34392, -53.88301],
+      ["Vista Alegre", -27.36989, -53.49141],
+      ["Vista Alegre do Prata", -28.80942, -51.78621],
+      ["Vista Gaúcha", -27.29024, -53.70231],
+      ["Vitória das Missões", -28.35094, -54.496],
+      ["Westfália", -29.41994, -51.76567],
+      ["Xangri-lá", -29.80099, -50.04388],
+    ];
+
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxnLLJ5Sbg__atv4CnbwXXyAf9iRmi0xs0WinKucyHTEw5kn6USDa4EwQvdnL3bf7a2/exec";
     const SEU_WHATSAPP = "5551996862383";
 
@@ -611,8 +1120,51 @@
       return Number(valor || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
     }
 
+    function normalizarCidade(cidade) {
+      return String(cidade || "").normalize("NFD").replace(/\p{M}/gu, "")
+        .trim().toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+    }
+
+    const cidadesPorNome = new Map(SEDES_MUNICIPAIS_RS.map(sede => [normalizarCidade(sede[0]), sede]));
+    const cidadeClienteEl = document.getElementById("cidadeCliente");
+    const listaCidades = document.getElementById("municipiosRS");
+    for (const [nome] of SEDES_MUNICIPAIS_RS) listaCidades.append(new Option(nome, nome));
+    cidadeClienteEl.addEventListener("input", () => cidadeClienteEl.setCustomValidity(""));
+
+    function distanciaEntreSedes(origem, destino) {
+      const radianos = Math.PI / 180;
+      const [, latOrigem, lonOrigem] = origem;
+      const [, latDestino, lonDestino] = destino;
+      const deltaLat = (latDestino - latOrigem) * radianos;
+      const deltaLon = (lonDestino - lonOrigem) * radianos;
+      const arco = Math.sin(deltaLat / 2) ** 2
+        + Math.cos(latOrigem * radianos) * Math.cos(latDestino * radianos) * Math.sin(deltaLon / 2) ** 2;
+      return 2 * 6371 * Math.asin(Math.sqrt(Math.min(1, arco)));
+    }
+
+    function ordenarPorProximidade(ofertas, origem) {
+      return ofertas.map(carro => {
+        // A resposta atual do Motor 1 termina o nome da loja com "(Cidade)".
+        const cidade = carro.cidade || String(carro.loja || "").match(/\(([^()]*)\)\s*$/)?.[1];
+        const uf = String(carro.uf || "RS").trim().toUpperCase();
+        const sede = uf === "RS" ? cidadesPorNome.get(normalizarCidade(cidade)) : undefined;
+        const distanciaKm = sede ? distanciaEntreSedes(origem, sede) : Infinity;
+        return { carro, distanciaKm };
+      }).sort((a, b) => {
+        if (a.distanciaKm === b.distanciaKm) return 0;
+        return a.distanciaKm < b.distanciaKm ? -1 : 1;
+      });
+    }
+
     document.getElementById("matchForm").addEventListener("submit", async (e) => {
       e.preventDefault();
+      const cidade = cidadesPorNome.get(normalizarCidade(cidadeClienteEl.value));
+      if (!cidade) {
+        cidadeClienteEl.setCustomValidity("Informe um município do Rio Grande do Sul.");
+        cidadeClienteEl.reportValidity();
+        return;
+      }
+      cidadeClienteEl.value = cidade[0];
       const btn = document.getElementById("btnBuscar");
       btn.disabled = true;
       btn.textContent = "Avaliando troca e cruzando estoque...";
@@ -652,7 +1204,7 @@
           body: JSON.stringify(payload)
         });
         const resposta = await res.json();
-        renderizarResultado(payload, resposta);
+        renderizarResultado(payload, resposta, cidade);
       } catch (err) {
         alert("Não foi possível conectar com a base agora. Tente novamente em instantes.");
       } finally {
@@ -661,11 +1213,11 @@
       }
     });
 
-    function renderizarResultado(payload, resposta) {
+    function renderizarResultado(payload, resposta, cidade) {
       const box = document.getElementById("resultado");
       const resumo = document.getElementById("resumoFinanceiro");
       const lista = document.getElementById("listaMatches");
-      const matches = Array.isArray(resposta.matches) ? resposta.matches : [];
+      const matches = Array.isArray(resposta.matches) ? ordenarPorProximidade(resposta.matches, cidade) : [];
       const carroNaTroca = [payload.atualMarca, payload.atualModelo, payload.atualAno].filter(Boolean).join(" ");
       const textoTroca = payload.temCarro && carroNaTroca ? ` Tenho um ${carroNaTroca} para dar na troca.` : "";
       lista.replaceChildren();
@@ -680,7 +1232,7 @@
           const titulo = document.createElement("summary");
           titulo.textContent = "Ver mais opções";
           mais.append(titulo);
-          for (const carro of matches.slice(1)) mais.append(criarOferta(carro, textoTroca));
+          for (const oferta of matches.slice(1)) mais.append(criarOferta(oferta, textoTroca));
           lista.append(mais);
         }
       } else {
@@ -700,7 +1252,7 @@
       box.scrollIntoView({ behavior: "smooth" });
     }
 
-    function criarOferta(carro, textoTroca) {
+    function criarOferta({ carro, distanciaKm }, textoTroca) {
       const item = document.createElement("article");
       item.className = "match-item";
       const nome = [carro.modelo, Number(carro.ano) > 0 ? carro.ano : ""].filter(Boolean).join(" ");
@@ -709,7 +1261,10 @@
       const meta = document.createElement("div");
       meta.className = "match-meta";
       const km = Number(carro.km);
-      meta.textContent = [carro.loja, km > 0 ? `${km.toLocaleString("pt-BR")} km` : "", "Disponibilidade a confirmar"]
+      let proximidade = "";
+      if (distanciaKm === 0) proximidade = "Na sua cidade";
+      else if (Number.isFinite(distanciaKm)) proximidade = `~${Math.max(1, Math.round(distanciaKm))} km em linha reta`;
+      meta.textContent = [carro.loja, proximidade, km > 0 ? `${km.toLocaleString("pt-BR")} km rodados` : "", "Disponibilidade a confirmar"]
         .filter(Boolean).join(" • ");
       const preco = document.createElement("div");
       preco.className = "match-price";
