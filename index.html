@@ -1020,8 +1020,8 @@
       itens.forEach((item) => {
         const opt = document.createElement("option");
         if (typeof item === "object") {
-          opt.value = item.versao;
-          opt.textContent = item.versao;
+          opt.value = item.valor ?? item.versao;
+          opt.textContent = item.rotulo ?? item.versao;
         } else {
           opt.value = item;
           opt.textContent = item;
@@ -1094,7 +1094,10 @@
       configurarCascata("desejado", true);
 
       try {
-        const marcas = await consultarCatalogo({ action: "marcas" });
+        const marcas = (await consultarCatalogo({ action: "marcas" })).map(marca => ({
+          valor: marca,
+          rotulo: marca.toLocaleUpperCase("pt-BR")
+        }));
         preencherSelect(document.getElementById("atualMarca"), marcas, "Selecione a marca");
         preencherSelect(document.getElementById("desejadoMarca"), marcas, "Selecione a marca");
       } catch (e) {
