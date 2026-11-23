@@ -13,7 +13,7 @@
       --accent-hover: #1d4ed8;
       --text: #1e293b;
       --muted: #64748b;
-      --border: #e2e8f0;
+      --border: #cbd5e1;
       --success-bg: #ecfdf5;
       --success-text: #065f46;
       --info-bg: #eff6ff;
@@ -31,13 +31,13 @@
     }
 
     .container {
-      max-width: 600px;
+      max-width: 640px;
       margin: 0 auto 40px;
     }
 
     header {
       text-align: center;
-      padding: 16px 8px 20px;
+      padding: 14px 8px 18px;
     }
 
     header h1 {
@@ -59,7 +59,7 @@
       padding: 20px;
       margin-bottom: 16px;
       box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
-      border: 1px solid var(--border);
+      border: 1px solid #e2e8f0;
     }
 
     .section-title {
@@ -68,10 +68,19 @@
       color: var(--primary);
       margin: 0 0 14px;
       padding-bottom: 8px;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid #e2e8f0;
       display: flex;
       align-items: center;
       gap: 8px;
+    }
+
+    .sub-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+      margin: 16px 0 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
     }
 
     .badge {
@@ -88,7 +97,7 @@
       gap: 12px;
     }
 
-    @media (max-width: 480px) {
+    @media (max-width: 520px) {
       .grid-2 { grid-template-columns: 1fr; }
     }
 
@@ -109,9 +118,15 @@
       padding: 11px 12px;
       border: 1px solid var(--border);
       border-radius: 9px;
-      font-size: 15px;
+      font-size: 14.5px;
       background: #fff;
       color: var(--text);
+    }
+
+    select:disabled {
+      background: #f1f5f9;
+      color: #94a3b8;
+      cursor: not-allowed;
     }
 
     input:focus, select:focus {
@@ -158,9 +173,7 @@
       line-height: 1.45;
     }
 
-    #resultado {
-      display: none;
-    }
+    #resultado { display: none; }
 
     .summary-box {
       background: var(--success-bg);
@@ -173,7 +186,7 @@
     }
 
     .match-item {
-      border: 1px solid var(--border);
+      border: 1px solid #e2e8f0;
       border-radius: 10px;
       padding: 14px;
       margin-bottom: 10px;
@@ -182,18 +195,29 @@
 
     .match-item h3 {
       margin: 0 0 6px;
-      font-size: 16px;
+      font-size: 15.5px;
       color: var(--primary);
     }
 
     .match-meta {
       font-size: 13px;
       color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .match-plan {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #065f46;
+      background: #ecfdf5;
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
       margin-bottom: 8px;
     }
 
     .match-price {
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 700;
       color: var(--accent);
     }
@@ -215,14 +239,14 @@
   <div class="container">
     <header>
       <h1>VeícMatch</h1>
-      <p>Informe seu carro atual, sua condição de pagamento e o modelo desejado.</p>
+      <p>Selecione seu veículo na troca, informe checklist, débitos e parcela e descubra o Match real.</p>
     </header>
 
     <form id="matchForm">
-      <!-- BLOCO 1: CARRO ATUAL -->
+      <!-- BLOCO 1: CARRO ATUAL E CHECKLIST COMPLETO -->
       <div class="card">
         <div class="section-title"><span class="badge">1</span> Seu carro na troca</div>
-        
+
         <div class="field">
           <label for="temCarro">Você vai dar um veículo na troca?</label>
           <select id="temCarro" name="temCarro">
@@ -232,58 +256,157 @@
         </div>
 
         <div id="dadosCarroAtual">
+          <div class="sub-title">Dados básicos do veículo</div>
+
           <div class="grid-2">
             <div class="field">
               <label for="atualMarca">Marca</label>
-              <input type="text" id="atualMarca" placeholder="Ex.: Chevrolet" required />
+              <select id="atualMarca" required>
+                <option value="">Carregando marcas...</option>
+              </select>
             </div>
+
             <div class="field">
-              <label for="atualModelo">Modelo e versão</label>
-              <input type="text" id="atualModelo" placeholder="Ex.: Onix LT 1.0" required />
+              <label for="atualModelo">Modelo base</label>
+              <select id="atualModelo" disabled required>
+                <option value="">Selecione a marca primeiro</option>
+              </select>
             </div>
           </div>
 
           <div class="grid-2">
             <div class="field">
-              <label for="atualAno">Ano modelo</label>
-              <input type="number" id="atualAno" min="2005" max="2027" placeholder="Ex.: 2020" required />
+              <label for="atualAno">Ano do modelo</label>
+              <select id="atualAno" disabled required>
+                <option value="">Selecione o modelo primeiro</option>
+              </select>
             </div>
+
             <div class="field">
               <label for="atualKm">Quilometragem atual (km)</label>
-              <input type="number" id="atualKm" min="0" step="1000" placeholder="Ex.: 68000" required />
+              <input type="number" id="atualKm" min="0" step="1000" placeholder="Ex.: 65000" required />
             </div>
+          </div>
+
+          <div class="field">
+            <label for="atualVersao">Versão oficial FIPE</label>
+            <select id="atualVersao" disabled required>
+              <option value="">Selecione o ano primeiro</option>
+            </select>
+          </div>
+
+          <div class="sub-title">Checklist de integridade e procedência</div>
+
+          <div class="grid-2">
+            <div class="field">
+              <label for="estadoLataria">Lataria e pintura</label>
+              <select id="estadoLataria" required>
+                <option value="sem_avarias" selected>Sem avarias</option>
+                <option value="pequenos_detalhes">Pequenos detalhes / retoques</option>
+                <option value="avarias_funilaria">Com avarias / funilaria</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="estadoPneus">Pneus</label>
+              <select id="estadoPneus" required>
+                <option value="bons" selected>Bons</option>
+                <option value="meia_vida">Meia vida</option>
+                <option value="precisando_trocar">Precisando trocar</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="field">
+              <label for="estadoEstofados">Estofados e interior</label>
+              <select id="estadoEstofados" required>
+                <option value="sem_avarias" selected>Sem avarias</option>
+                <option value="desgaste_leve">Desgaste leve de uso</option>
+                <option value="avarias_manchas">Avarias, rasgos ou manchas</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="estadoEletrica">Elétrica e acessórios</label>
+              <select id="estadoEletrica" required>
+                <option value="sem_avarias" selected>Sem avarias</option>
+                <option value="pendencia_leve">Pendência leve</option>
+                <option value="defeito_relevante">Defeito relevante</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="field">
+              <label for="estadoMecanica">Motor e câmbio</label>
+              <select id="estadoMecanica" required>
+                <option value="sem_avarias" selected>Sem avarias</option>
+                <option value="atencao_preventiva">Atenção preventiva / revisão</option>
+                <option value="reparo_corretivo">Necessita reparo corretivo</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="estadoManualRevisoes">Manual, chave cópia e revisões</label>
+              <select id="estadoManualRevisoes" required>
+                <option value="completo" selected>Completo</option>
+                <option value="parcial">Parcial</option>
+                <option value="sem_itens">Sem manual / chave cópia</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="historicoSinistro">Histórico de leilão ou sinistro</label>
+            <select id="historicoSinistro" required>
+              <option value="sem_apontamento" selected>Sem apontamento</option>
+              <option value="sinistro_recuperado">Sinistro / passagem por seguradora</option>
+              <option value="leilao_monta">Leilão / média ou grande monta</option>
+            </select>
+          </div>
+
+          <div class="sub-title">Quitação, IPVA, licenciamento e multas</div>
+
+          <div class="grid-2">
+            <div class="field">
+              <label for="situacaoQuitacao">O carro está quitado ou financiado?</label>
+              <select id="situacaoQuitacao" required>
+                <option value="quitado" selected>Quitado</option>
+                <option value="financiado">Financiado (possui saldo devedor)</option>
+              </select>
+            </div>
+
+            <div class="field" id="campoSaldoDevedor" style="display: none;">
+              <label for="saldoDevedor">Quanto falta para quitar hoje? (R$)</label>
+              <input type="number" id="saldoDevedor" min="0" step="100" value="0" placeholder="Ex.: 18500" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="valorDebitosDoc">IPVA, licenciamento e multas pendentes (R$)</label>
+            <input type="number" id="valorDebitosDoc" min="0" step="50" value="0" placeholder="0 se tudo estiver pago" />
+            <div class="helper">Some IPVA em aberto/parcelas, licenciamento e multas caso existam.</div>
           </div>
         </div>
       </div>
 
       <!-- BLOCO 2: CONDIÇÃO FINANCEIRA -->
       <div class="card">
-        <div class="section-title"><span class="badge">2</span> Entrada e parcela desejada</div>
+        <div class="section-title"><span class="badge">2</span> Capacidade de pagamento</div>
 
         <div class="grid-2">
           <div class="field">
             <label for="entradaExtra">Dinheiro extra para entrada (R$)</label>
             <input type="number" id="entradaExtra" min="0" step="500" value="0" placeholder="Ex.: 10000" />
-            <div class="helper">Deixe 0 se for usar apenas seu carro.</div>
+            <div class="helper">Informe 0 se usar apenas seu carro.</div>
           </div>
 
           <div class="field">
-            <label for="parcelaMax">Parcela máxima desejada (R$)</label>
-            <input type="number" id="parcelaMax" min="0" step="50" value="0" placeholder="Ex.: 1200" />
-            <div class="helper">Deixe 0 se não quiser financiar.</div>
+            <label for="parcelaMax">Valor máximo da parcela (R$/mês)</label>
+            <input type="number" id="parcelaMax" min="0" step="50" value="0" placeholder="Ex.: 1300" />
+            <div class="helper">Verificamos automaticamente qual prazo atende sua parcela.</div>
           </div>
-        </div>
-
-        <div class="field">
-          <label for="prazo">Prazo do financiamento</label>
-          <select id="prazo">
-            <option value="0">Sem financiamento (à vista / só troca + entrada)</option>
-            <option value="12">12x</option>
-            <option value="24">24x</option>
-            <option value="36">36x</option>
-            <option value="48" selected>48x</option>
-            <option value="60">60x</option>
-          </select>
         </div>
       </div>
 
@@ -293,19 +416,34 @@
 
         <div class="grid-2">
           <div class="field">
-            <label for="desejadoModelo">Marca / Modelo desejado</label>
-            <input type="text" id="desejadoModelo" placeholder="Ex.: HB20, Tracker, Corolla..." required />
+            <label for="desejadoMarca">Marca desejada</label>
+            <select id="desejadoMarca" required>
+              <option value="">Carregando marcas...</option>
+            </select>
           </div>
 
           <div class="field">
-            <label for="desejadoAnoMin">Ano mínimo desejado</label>
-            <input type="number" id="desejadoAnoMin" min="2010" max="2027" placeholder="Ex.: 2021" />
+            <label for="desejadoModelo">Modelo desejado</label>
+            <select id="desejadoModelo" disabled required>
+              <option value="">Selecione a marca primeiro</option>
+            </select>
           </div>
         </div>
 
-        <div class="field">
-          <label for="desejadoVersao">Versão ou observação (opcional)</label>
-          <input type="text" id="desejadoVersao" placeholder="Ex.: Turbo, SUV compacto, sedan executivo..." />
+        <div class="grid-2">
+          <div class="field">
+            <label for="desejadoAnoMin">Ano mínimo desejado</label>
+            <select id="desejadoAnoMin">
+              <option value="">Qualquer ano</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="desejadoVersao">Versão desejada (opcional)</label>
+            <select id="desejadoVersao" disabled>
+              <option value="">Qualquer versão</option>
+            </select>
+          </div>
         </div>
 
         <div class="field">
@@ -316,12 +454,11 @@
         <button type="submit" class="btn-primary" id="btnBuscar">Buscar meu Match de Troca</button>
 
         <div class="aviso">
-          <strong>Transparência VeícMatch:</strong> Os valores de financiamento são simulações estimadas sujeitas à análise de crédito. A avaliação final do veículo usado depende de vistoria presencial na loja parceira.
+          <strong>Transparência VeícMatch:</strong> Simulação estimada sujeita à análise de crédito e vistoria presencial com conferência de débitos/gravame na loja parceira.
         </div>
       </div>
     </form>
 
-    <!-- RESULTADO DO MATCH -->
     <div class="card" id="resultado">
       <div class="section-title">Resultado da sua simulação</div>
       <div class="summary-box" id="resumoFinanceiro"></div>
@@ -330,94 +467,180 @@
   </div>
 
   <script>
-    // COLE AQUI A URL DO SEU GOOGLE APPS SCRIPT QUANDO PUBLICAR COMO WEB APP
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxnLLJ5Sbg__atv4CnbwXXyAf9iRmi0xs0WinKucyHTEw5kn6USDa4EwQvdnL3bf7a2/exec";
-
-    // Seu número de WhatsApp para atendimento consultivo (55 + DDD + número)
+    const APPS_SCRIPT_URL = "COLE_SUA_URL_EXEC_AQUI";
     const SEU_WHATSAPP = "5551999999999";
 
-    // Taxas mensais definidas para o simulador VeícMatch
-    const TAXAS_MENSAIS = {
-      12: 0.019,
-      24: 0.020,
-      36: 0.021,
-      48: 0.022,
-      60: 0.023
-    };
+    async function consultarCatalogo(params) {
+      const qs = new URLSearchParams(params).toString();
+      const res = await fetch(`${APPS_SCRIPT_URL}?${qs}`);
+      const json = await res.json();
+      return json.dados || [];
+    }
+
+    function preencherSelect(selectEl, itens, placeholder, manterVazio = false) {
+      selectEl.innerHTML = "";
+      const opt0 = document.createElement("option");
+      opt0.value = "";
+      opt0.textContent = placeholder;
+      selectEl.appendChild(opt0);
+
+      itens.forEach((item) => {
+        const opt = document.createElement("option");
+        if (typeof item === "object") {
+          opt.value = item.versao;
+          opt.textContent = item.versao;
+        } else {
+          opt.value = item;
+          opt.textContent = item;
+        }
+        selectEl.appendChild(opt);
+      });
+      selectEl.disabled = itens.length === 0 && !manterVazio;
+    }
+
+    function configurarCascata(prefixo, opcionalVersao = false) {
+      const elMarca = document.getElementById(`${prefixo}Marca`);
+      const elModelo = document.getElementById(`${prefixo}Modelo`);
+      const elAno = document.getElementById(prefixo === "atual" ? "atualAno" : "desejadoAnoMin");
+      const elVersao = document.getElementById(`${prefixo}Versao`);
+
+      elMarca.addEventListener("change", async () => {
+        const marca = elMarca.value;
+        preencherSelect(elModelo, [], "Carregando modelos...");
+        preencherSelect(elAno, [], opcionalVersao ? "Qualquer ano" : "Selecione o modelo primeiro", opcionalVersao);
+        preencherSelect(elVersao, [], opcionalVersao ? "Qualquer versão" : "Selecione o ano primeiro", opcionalVersao);
+
+        if (!marca) return;
+        const modelos = await consultarCatalogo({ action: "modelos", marca });
+        preencherSelect(elModelo, modelos, "Selecione o modelo");
+      });
+
+      elModelo.addEventListener("change", async () => {
+        const marca = elMarca.value;
+        const modelo = elModelo.value;
+        preencherSelect(elAno, [], "Carregando anos...");
+        preencherSelect(elVersao, [], opcionalVersao ? "Qualquer versão" : "Selecione o ano primeiro", opcionalVersao);
+
+        if (!marca || !modelo) return;
+        const anos = await consultarCatalogo({ action: "anos", marca, modelo });
+        preencherSelect(elAno, anos, opcionalVersao ? "Qualquer ano" : "Selecione o ano", opcionalVersao);
+
+        if (opcionalVersao) {
+          const versoes = await consultarCatalogo({ action: "versoes", marca, modelo });
+          preencherSelect(elVersao, versoes, "Qualquer versão", true);
+        }
+      });
+
+      elAno.addEventListener("change", async () => {
+        const marca = elMarca.value;
+        const modelo = elModelo.value;
+        const ano = elAno.value;
+
+        if (!marca || !modelo) return;
+        if (!ano && !opcionalVersao) {
+          preencherSelect(elVersao, [], "Selecione o ano primeiro");
+          return;
+        }
+
+        preencherSelect(elVersao, [], "Carregando versões...");
+        const params = { action: "versoes", marca, modelo };
+        if (ano) params.ano = ano;
+
+        const versoes = await consultarCatalogo(params);
+        preencherSelect(
+          elVersao,
+          versoes,
+          opcionalVersao ? "Qualquer versão" : "Selecione a versão exata",
+          opcionalVersao
+        );
+      });
+    }
+
+    window.addEventListener("DOMContentLoaded", async () => {
+      configurarCascata("atual", false);
+      configurarCascata("desejado", true);
+
+      try {
+        const marcas = await consultarCatalogo({ action: "marcas" });
+        preencherSelect(document.getElementById("atualMarca"), marcas, "Selecione a marca");
+        preencherSelect(document.getElementById("desejadoMarca"), marcas, "Selecione a marca");
+      } catch (e) {
+        console.error("Erro ao carregar marcas:", e);
+      }
+    });
 
     const temCarroEl = document.getElementById("temCarro");
     const dadosCarroAtualEl = document.getElementById("dadosCarroAtual");
+    const situacaoQuitacaoEl = document.getElementById("situacaoQuitacao");
+    const campoSaldoDevedorEl = document.getElementById("campoSaldoDevedor");
+
+    const camposObrigatoriosTroca = [
+      "atualMarca", "atualModelo", "atualAno", "atualKm", "atualVersao",
+      "estadoLataria", "estadoPneus", "estadoEstofados", "estadoEletrica",
+      "estadoMecanica", "estadoManualRevisoes", "historicoSinistro",
+      "situacaoQuitacao", "valorDebitosDoc"
+    ];
 
     temCarroEl.addEventListener("change", () => {
       const ativo = temCarroEl.value === "sim";
       dadosCarroAtualEl.style.display = ativo ? "block" : "none";
-      document.getElementById("atualMarca").required = ativo;
-      document.getElementById("atualModelo").required = ativo;
-      document.getElementById("atualAno").required = ativo;
-      document.getElementById("atualKm").required = ativo;
+      camposObrigatoriosTroca.forEach(id => {
+        document.getElementById(id).required = ativo;
+      });
     });
 
-    function calcularValorFinanciado(parcela, meses) {
-      if (!parcela || parcela <= 0 || !meses || meses <= 0) return 0;
-      const i = TAXAS_MENSAIS[meses] || 0.022;
-      // Valor Presente (Tabela Price)
-      return parcela * ((1 - Math.pow(1 + i, -meses)) / i);
-    }
+    situacaoQuitacaoEl.addEventListener("change", () => {
+      const financiado = situacaoQuitacaoEl.value === "financiado";
+      campoSaldoDevedorEl.style.display = financiado ? "block" : "none";
+      document.getElementById("saldoDevedor").required = financiado;
+      if (!financiado) document.getElementById("saldoDevedor").value = 0;
+    });
 
     function formatarMoeda(valor) {
-      return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+      return Number(valor || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
     }
 
     document.getElementById("matchForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const btn = document.getElementById("btnBuscar");
       btn.disabled = true;
-      btn.textContent = "Calculando viabilidade e buscando estoque...";
+      btn.textContent = "Avaliando troca e cruzando estoque...";
 
       const temCarro = temCarroEl.value === "sim";
-      const entradaExtra = Number(document.getElementById("entradaExtra").value) || 0;
-      const parcelaMax = Number(document.getElementById("parcelaMax").value) || 0;
-      const prazo = Number(document.getElementById("prazo").value) || 0;
-
-      const poderFinanciamento = calcularValorFinanciado(parcelaMax, prazo);
+      const situacaoQuitacao = temCarro ? situacaoQuitacaoEl.value : "";
 
       const payload = {
         temCarro,
-        atualMarca: temCarro ? document.getElementById("atualMarca").value.trim() : "",
-        atualModelo: temCarro ? document.getElementById("atualModelo").value.trim() : "",
+        atualMarca: temCarro ? document.getElementById("atualMarca").value : "",
+        atualModelo: temCarro ? document.getElementById("atualModelo").value : "",
         atualAno: temCarro ? Number(document.getElementById("atualAno").value) : null,
         atualKm: temCarro ? Number(document.getElementById("atualKm").value) : null,
-        entradaExtra,
-        parcelaMax,
-        prazo,
-        poderFinanciamento: Math.round(poderFinanciamento),
-        desejadoModelo: document.getElementById("desejadoModelo").value.trim(),
+        atualVersao: temCarro ? document.getElementById("atualVersao").value : "",
+        estadoLataria: temCarro ? document.getElementById("estadoLataria").value : "",
+        estadoPneus: temCarro ? document.getElementById("estadoPneus").value : "",
+        estadoEstofados: temCarro ? document.getElementById("estadoEstofados").value : "",
+        estadoEletrica: temCarro ? document.getElementById("estadoEletrica").value : "",
+        estadoMecanica: temCarro ? document.getElementById("estadoMecanica").value : "",
+        estadoManualRevisoes: temCarro ? document.getElementById("estadoManualRevisoes").value : "",
+        historicoSinistro: temCarro ? document.getElementById("historicoSinistro").value : "",
+        situacaoQuitacao,
+        saldoDevedor: (temCarro && situacaoQuitacao === "financiado") ? (Number(document.getElementById("saldoDevedor").value) || 0) : 0,
+        valorDebitosDoc: temCarro ? (Number(document.getElementById("valorDebitosDoc").value) || 0) : 0,
+        entradaExtra: Number(document.getElementById("entradaExtra").value) || 0,
+        parcelaMax: Number(document.getElementById("parcelaMax").value) || 0,
+        desejadoMarca: document.getElementById("desejadoMarca").value,
+        desejadoModelo: document.getElementById("desejadoModelo").value,
         desejadoAnoMin: Number(document.getElementById("desejadoAnoMin").value) || null,
-        desejadoVersao: document.getElementById("desejadoVersao").value.trim(),
+        desejadoVersao: document.getElementById("desejadoVersao").value,
         whatsappCliente: document.getElementById("whatsappCliente").value.trim()
       };
 
       try {
-        let resposta;
-
-        if (APPS_SCRIPT_URL) {
-          const res = await fetch(APPS_SCRIPT_URL, {
-            method: "POST",
-            body: JSON.stringify(payload)
-          });
-          resposta = await res.json();
-        } else {
-          // Modo simulação local enquanto a URL do Google Sheets não é colada
-          const orcamentoSemTroca = entradaExtra + poderFinanciamento;
-          resposta = {
-            modoDemo: true,
-            mensagem: temCarro
-              ? `Recebemos os dados do seu ${payload.atualMarca} ${payload.atualModelo} (${payload.atualAno}, ${payload.atualKm.toLocaleString("pt-BR")} km). Somando sua entrada de ${formatarMoeda(entradaExtra)} e o potencial financiado de ${formatarMoeda(poderFinanciamento)}, vamos cruzar agora com a avaliação FIPE e o estoque das lojas parceiras para encontrar seu ${payload.desejadoModelo}.`
-              : `Seu potencial estimado de compra (entrada + financiamento) é de ${formatarMoeda(orcamentoSemTroca)}.`,
-            matches: []
-          };
-        }
-
+        const res = await fetch(APPS_SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify(payload)
+        });
+        const resposta = await res.json();
         renderizarResultado(payload, resposta);
       } catch (err) {
         alert("Não foi possível conectar com a base agora. Tente novamente em instantes.");
@@ -439,7 +662,9 @@
         resposta.matches.forEach((carro) => {
           const textoWhats = encodeURIComponent(
             `Olá! Fiz uma simulação no VeícMatch. Tenho interesse no ${carro.modelo} ${carro.ano} (${formatarMoeda(carro.preco)}). ` +
-            (payload.temCarro ? `Meu carro na troca: ${payload.atualMarca} ${payload.atualModelo} ${payload.atualAno} (${payload.atualKm} km).` : "")
+            (payload.temCarro
+              ? `Meu carro na troca: ${payload.atualMarca} ${payload.atualVersao} ${payload.atualAno} (${payload.atualKm} km, ${payload.situacaoQuitacao === "financiado" ? "financiado, falta " + formatarMoeda(payload.saldoDevedor) : "quitado"}, débitos doc: ${formatarMoeda(payload.valorDebitosDoc)}).`
+              : "")
           );
 
           const item = document.createElement("div");
@@ -447,6 +672,7 @@
           item.innerHTML = `
             <h3>${carro.modelo} — ${carro.ano}</h3>
             <div class="match-meta">${carro.km ? carro.km.toLocaleString("pt-BR") + " km • " : ""}${carro.loja || "Loja Parceira"}</div>
+            <div class="match-plan">${carro.prazoSugerido || ""}</div>
             <div class="match-price">${formatarMoeda(carro.preco)}</div>
             <a class="btn-whats" href="https://wa.me/${SEU_WHATSAPP}?text=${textoWhats}" target="_blank">Avançar com este Match no WhatsApp</a>
           `;
@@ -455,16 +681,21 @@
       } else {
         const textoWhats = encodeURIComponent(
           `Olá! Fiz um pedido de Match no VeícMatch.\n` +
-          (payload.temCarro ? `• Meu carro: ${payload.atualMarca} ${payload.atualModelo} ${payload.atualAno} (${payload.atualKm} km)\n` : `• Sem carro na troca\n`) +
+          (payload.temCarro
+            ? `• Meu carro: ${payload.atualMarca} ${payload.atualVersao} ${payload.atualAno} (${payload.atualKm} km)\n` +
+              `• Quitação: ${payload.situacaoQuitacao === "financiado" ? "Financiado (falta " + formatarMoeda(payload.saldoDevedor) + ")" : "Quitado"}\n` +
+              `• IPVA/Licenc./Multas: ${formatarMoeda(payload.valorDebitosDoc)}\n` +
+              `• Checklist: Lataria (${payload.estadoLataria}), Pneus (${payload.estadoPneus}), Estofados (${payload.estadoEstofados}), Elétrica (${payload.estadoEletrica}), Mecânica (${payload.estadoMecanica}), Manual/Revisões (${payload.estadoManualRevisoes}), Histórico (${payload.historicoSinistro})\n`
+            : `• Sem carro na troca\n`) +
           `• Entrada extra: ${formatarMoeda(payload.entradaExtra)}\n` +
-          `• Parcela desejada: ${formatarMoeda(payload.parcelaMax)} (${payload.prazo}x)\n` +
-          `• Procuro: ${payload.desejadoModelo} ${payload.desejadoAnoMin ? "a partir de " + payload.desejadoAnoMin : ""}`
+          `• Parcela máxima: ${formatarMoeda(payload.parcelaMax)}/mês\n` +
+          `• Procuro: ${payload.desejadoMarca} ${payload.desejadoModelo} ${payload.desejadoVersao} ${payload.desejadoAnoMin ? "(a partir de " + payload.desejadoAnoMin + ")" : ""}`
         );
 
         lista.innerHTML = `
           <div class="match-item">
             <h3>Curadoria ativa nas lojas parceiras</h3>
-            <div class="match-meta">Já registramos seu perfil de troca e orçamento para localizar as melhores opções compatíveis na região.</div>
+            <div class="match-meta">Já registramos todos os itens do checklist, quitação, débitos e capacidade de parcela para localizar opções compatíveis na região.</div>
             <a class="btn-whats" href="https://wa.me/${SEU_WHATSAPP}?text=${textoWhats}" target="_blank">Receber opções no meu WhatsApp</a>
           </div>
         `;
