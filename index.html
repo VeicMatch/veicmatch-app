@@ -216,7 +216,9 @@
     .pre-avaliacao .faixa-troca { color: var(--primary); font-size: 22px; font-weight: 700; }
     .dados-pagamento { margin-bottom: 14px; }
     .linhas-financeiras { display: grid; gap: 6px; margin: 10px 0 0; }
-    .linhas-financeiras div { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; }
+    #resultado { text-align: center; }
+    #resultado .section-title { justify-content: center; }
+    .linhas-financeiras div { display: flex; justify-content: center; align-items: baseline; flex-wrap: wrap; gap: 2px 8px; }
     .linhas-financeiras dd { margin: 0; font-weight: 600; }
 
     .match-item {
@@ -278,6 +280,8 @@
       font: inherit;
       font-weight: 600;
     }
+
+    .btn-ajustar-busca[hidden] { display: none; }
   </style>
 </head>
 <body>
@@ -324,6 +328,7 @@
             <select id="desejadoVersao" disabled>
               <option value="">Qualquer versão</option>
             </select>
+            <button type="button" class="btn-ajustar-busca" id="limparVersao" hidden>Limpar filtro de versão</button>
           </div>
         </div>
 
@@ -504,6 +509,11 @@
         </div>
 
         <div class="field">
+          <label for="nomeCliente">Seu nome (opcional)</label>
+          <input type="text" id="nomeCliente" autocomplete="name" maxlength="120" />
+        </div>
+
+        <div class="field">
           <label for="whatsappCliente">Seu WhatsApp para receber as opções (opcional)</label>
           <input type="tel" id="whatsappCliente" placeholder="(51) 99999-9999" />
         </div>
@@ -518,6 +528,7 @@
       <div id="resumoSimulacao"></div>
       <div class="summary-box" id="resumoFinanceiro"></div>
       <div id="listaMatches"></div>
+      <button type="button" class="btn-ajustar-busca" id="refazerSimulacao">Refazer simulação</button>
     </div>
   </div>
 
@@ -1039,6 +1050,7 @@
       const opt0 = document.createElement("option");
       opt0.value = "";
       opt0.textContent = placeholder;
+      opt0.defaultSelected = true;
       selectEl.appendChild(opt0);
 
       itens.forEach((item) => {
@@ -1053,7 +1065,21 @@
         selectEl.appendChild(opt);
       });
       selectEl.disabled = itens.length === 0 && !manterVazio;
+      if (selectEl.id === "desejadoVersao") atualizarLimparVersao();
     }
+
+    function atualizarLimparVersao() {
+      const versao = document.getElementById("desejadoVersao");
+      document.getElementById("limparVersao").hidden = !versao.value || versao.disabled;
+    }
+
+    document.getElementById("desejadoVersao").addEventListener("change", atualizarLimparVersao);
+    document.getElementById("limparVersao").addEventListener("click", () => {
+      const versao = document.getElementById("desejadoVersao");
+      versao.value = "";
+      atualizarLimparVersao();
+      versao.focus();
+    });
 
     function configurarCascata(prefixo, opcionalVersao = false) {
       const elMarca = document.getElementById(`${prefixo}Marca`);
@@ -1069,6 +1095,7 @@
 
         if (!marca) return;
         const modelos = await consultarCatalogo({ action: "modelos", marca });
+        if (elMarca.value !== marca) return;
         preencherSelect(elModelo, modelos, "Selecione o modelo");
       });
 
@@ -1080,10 +1107,12 @@
 
         if (!marca || !modelo) return;
         const anos = await consultarCatalogo({ action: "anos", marca, modelo });
+        if (elMarca.value !== marca || elModelo.value !== modelo) return;
         preencherSelect(elAno, anos, opcionalVersao ? "Qualquer ano" : "Selecione o ano", opcionalVersao);
 
         if (opcionalVersao) {
           const versoes = await consultarCatalogo({ action: "versoes", marca, modelo });
+          if (elMarca.value !== marca || elModelo.value !== modelo || elAno.value) return;
           preencherSelect(elVersao, versoes, "Qualquer versão", true);
         }
       });
@@ -1104,6 +1133,7 @@
         if (ano) params.ano = ano;
 
         const versoes = await consultarCatalogo(params);
+        if (elMarca.value !== marca || elModelo.value !== modelo || elAno.value !== ano) return;
         preencherSelect(
           elVersao,
           versoes,
@@ -1218,6 +1248,9 @@
       const situacaoQuitacao = temCarro ? situacaoQuitacaoEl.value : "";
 
       const payload = {
+        registrarHistorico: true,
+        nomeCliente: document.getElementById("nomeCliente").value.trim(),
+        cidadeCliente: cidade[0],
         temCarro,
         atualMarca: temCarro ? document.getElementById("atualMarca").value : "",
         atualModelo: temCarro ? document.getElementById("atualModelo").value : "",
@@ -1341,24 +1374,22 @@
       const resumo = document.getElementById("resumoFinanceiro");
       const lista = document.getElementById("listaMatches");
       const matches = Array.isArray(resposta.matches) ? ordenarPorProximidade(resposta.matches, cidade) : [];
-      const carroNaTroca = [payload.atualMarca, payload.atualModelo, payload.atualAno].filter(Boolean).join(" ");
+      const carroNaTroca = tituloOferta({ modelo: [payload.atualMarca, payload.atualModelo].filter(Boolean).join(" "), ano: payload.atualAno });
       const textoTroca = payload.temCarro && carroNaTroca ? ` Tenho um ${carroNaTroca} para dar na troca.` : "";
       renderizarResumoSimulacao(payload, resposta.avaliacaoTroca, carroNaTroca);
       lista.replaceChildren();
 
       if (matches.length > 0) {
-        resumo.textContent = "Curtiu algum carro? Peça ao VeicMatch para consultar a disponibilidade e apresentar sua proposta à loja.";
-        lista.append(criarOferta(matches[0], textoTroca));
-
-        if (matches.length > 1) {
-          const mais = document.createElement("details");
-          mais.className = "mais-matches";
-          const titulo = document.createElement("summary");
-          titulo.textContent = "Ver mais opções";
-          mais.append(titulo);
-          for (const oferta of matches.slice(1)) mais.append(criarOferta(oferta, textoTroca));
-          lista.append(mais);
-        }
+        const proximos = matches.filter(oferta => oferta.distanciaKm <= 100);
+        const outrasRegioes = matches.filter(oferta => Number.isFinite(oferta.distanciaKm) && oferta.distanciaKm > 100);
+        const semDistancia = matches.filter(oferta => !Number.isFinite(oferta.distanciaKm));
+        resumo.textContent = proximos.length
+          ? "Gostou de algum carro? Consulte a disponibilidade pelo WhatsApp."
+          : "Encontramos opções compatíveis. Confira abaixo a localização das lojas.";
+        if (proximos.length) lista.append(criarOferta(proximos[0], textoTroca));
+        adicionarGrupoOfertas(lista, "Ver mais opções", proximos.slice(1), textoTroca);
+        adicionarGrupoOfertas(lista, "Ver opções em outras regiões", outrasRegioes, textoTroca, !proximos.length);
+        adicionarGrupoOfertas(lista, "Ver opções com distância a confirmar", semDistancia, textoTroca, !proximos.length && !outrasRegioes.length);
       } else {
         resumo.textContent = "Ainda não encontramos uma opção no estoque parceiro com os filtros escolhidos.";
         const busca = payload.desejadoVersao || [payload.desejadoMarca, payload.desejadoModelo].filter(Boolean).join(" ");
@@ -1372,32 +1403,83 @@
         lista.append(ajustar, criarLinkWhatsApp("Pedir ajuda pelo WhatsApp", mensagem));
       }
 
+      if (resposta.historicoSalvo === false) {
+        const aviso = document.createElement("p");
+        aviso.className = "aviso";
+        aviso.textContent = "A busca foi concluída, mas o registro no histórico está indisponível no momento.";
+        lista.append(aviso);
+      }
       box.style.display = "block";
       box.scrollIntoView({ behavior: "smooth" });
+    }
+
+    function adicionarGrupoOfertas(lista, rotulo, ofertas, textoTroca, aberto = false) {
+      if (!ofertas.length) return;
+      const grupo = document.createElement("details");
+      grupo.className = "mais-matches";
+      grupo.open = aberto;
+      const titulo = document.createElement("summary");
+      titulo.textContent = rotulo;
+      grupo.append(titulo);
+      for (const oferta of ofertas) grupo.append(criarOferta(oferta, textoTroca));
+      lista.append(grupo);
+    }
+
+    function tituloOferta(carro) {
+      const ano = Number(carro.ano);
+      let nome = String(carro.modelo || "").trim();
+      if (ano >= 1900 && ano <= 2100) nome = nome.replace(new RegExp(`\\b${ano}\\b`, "g"), " ");
+      nome = nome.replace(/^GM\s*[-–]\s*Chevrolet\b/i, "Chevrolet")
+        .replace(/\b([\wÀ-ÿ]+(?:\s+[\wÀ-ÿ]+){0,2})\s*-\s*\1\b/gi, "$1")
+        .replace(/\b([\wÀ-ÿ]+)\s+\1\b/gi, "$1")
+        .replace(/(\bFlex\b.*)\bFlex\b\s*$/i, "$1")
+        .replace(/\s{2,}/g, " ").trim();
+      return [nome, ano >= 1900 && ano <= 2100 ? ano : ""].filter(Boolean).join(" ");
     }
 
     function criarOferta({ carro, distanciaKm }, textoTroca) {
       const item = document.createElement("article");
       item.className = "match-item";
-      const nome = [carro.modelo, Number(carro.ano) > 0 ? carro.ano : ""].filter(Boolean).join(" ");
+      const nome = tituloOferta(carro);
       const titulo = document.createElement("h3");
       titulo.textContent = nome;
       const meta = document.createElement("div");
       meta.className = "match-meta";
       const km = Number(carro.km);
-      let proximidade = "";
+      let proximidade = "Distância a confirmar";
       if (distanciaKm === 0) proximidade = "Na sua cidade";
       else if (Number.isFinite(distanciaKm)) proximidade = `~${Math.max(1, Math.round(distanciaKm))} km em linha reta`;
-      meta.textContent = [carro.loja, proximidade, km > 0 ? `${km.toLocaleString("pt-BR")} km rodados` : "", "Disponibilidade a confirmar"]
-        .filter(Boolean).join(" • ");
+      for (const detalhe of [carro.loja, proximidade, km > 1 ? `${km.toLocaleString("pt-BR")} km rodados` : "Quilometragem a confirmar"]) {
+        if (!detalhe) continue;
+        const linha = document.createElement("div");
+        linha.textContent = detalhe;
+        meta.append(linha);
+      }
       const preco = document.createElement("div");
       preco.className = "match-price";
       preco.textContent = Number(carro.preco) > 0 ? formatarMoeda(carro.preco) : "Preço a confirmar";
       const loja = carro.loja ? ` da loja ${carro.loja}` : "";
-      const mensagem = `Olá! Tenho interesse no ${nome}${loja} que apareceu no VeicMatch.${textoTroca} Podem confirmar a disponibilidade e apresentar minha proposta à loja?`;
-      item.append(titulo, meta, preco, criarLinkWhatsApp("Pedir envio da proposta à loja", mensagem));
+      const mensagem = `Olá! Vi o ${nome}${loja} no VeícMatch. Ele ainda está disponível?${textoTroca} Gostaria de conversar sobre as condições de compra.`;
+      item.append(titulo, meta, preco, criarLinkWhatsApp("Consultar disponibilidade", mensagem));
       return item;
     }
+
+    document.getElementById("refazerSimulacao").addEventListener("click", () => {
+      if (document.getElementById("btnBuscar").disabled) return;
+      document.getElementById("matchForm").reset();
+      for (const prefixo of ["atual", "desejado"]) {
+        const marca = document.getElementById(`${prefixo}Marca`);
+        marca.value = "";
+        marca.dispatchEvent(new Event("change"));
+      }
+      atualizarCamposTroca();
+      situacaoQuitacaoEl.dispatchEvent(new Event("change"));
+      cidadeClienteEl.setCustomValidity("");
+      for (const id of ["resumoSimulacao", "resumoFinanceiro", "listaMatches"]) document.getElementById(id).replaceChildren();
+      document.getElementById("resultado").style.display = "none";
+      document.getElementById("desejadoMarca").focus({ preventScroll: true });
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
 
     function criarLinkWhatsApp(rotulo, mensagem) {
       const link = document.createElement("a");
