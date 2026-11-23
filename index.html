@@ -1,50 +1,478 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeicMatch — Motor 1</title>
+  <title>VeícMatch — Simulador de Troca Inteligente</title>
   <style>
+    :root {
+      --bg: #f3f5f8;
+      --card: #ffffff;
+      --primary: #0f172a;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --success-bg: #ecfdf5;
+      --success-text: #065f46;
+      --info-bg: #eff6ff;
+      --info-text: #1e40af;
+    }
+
+    * { box-sizing: border-box; }
+
     body {
-      font-family: Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
       margin: 0;
-      padding: 24px;
-      background: #f4f6f9;
-      color: #1b222c;
+      padding: 16px;
+      background: var(--bg);
+      color: var(--text);
     }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto 40px;
+    }
+
+    header {
+      text-align: center;
+      padding: 16px 8px 20px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 26px;
+      color: var(--primary);
+      letter-spacing: -0.5px;
+    }
+
+    header p {
+      margin: 6px 0 0;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
     .card {
-      max-width: 520px;
-      margin: 24px auto;
-      background: #ffffff;
-      border-radius: 12px;
-      padding: 24px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      background: var(--card);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+      border: 1px solid var(--border);
     }
-    h1 {
-      margin-top: 0;
-      font-size: 24px;
+
+    .section-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--primary);
+      margin: 0 0 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    p {
-      line-height: 1.5;
-      color: #445060;
+
+    .badge {
+      background: var(--primary);
+      color: #fff;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
     }
-    .aviso {
-      margin-top: 16px;
-      padding: 12px;
-      border-radius: 8px;
-      background: #eef3fa;
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 480px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    .field {
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: block;
       font-size: 13px;
-      color: #2b3a4a;
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: var(--text);
+    }
+
+    input, select {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      font-size: 15px;
+      background: #fff;
+      color: var(--text);
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .helper {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    button.btn-primary {
+      width: 100%;
+      padding: 14px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button.btn-primary:hover {
+      background: var(--accent-hover);
+    }
+
+    button.btn-primary:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    .aviso {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 9px;
+      background: var(--info-bg);
+      color: var(--info-text);
+      font-size: 12.5px;
+      line-height: 1.45;
+    }
+
+    #resultado {
+      display: none;
+    }
+
+    .summary-box {
+      background: var(--success-bg);
+      color: var(--success-text);
+      padding: 14px;
+      border-radius: 10px;
+      margin-bottom: 14px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .match-item {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 10px;
+      background: #fafbfc;
+    }
+
+    .match-item h3 {
+      margin: 0 0 6px;
+      font-size: 16px;
+      color: var(--primary);
+    }
+
+    .match-meta {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .match-price {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .btn-whats {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 9px 14px;
+      background: #16a34a;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>VeicMatch</h1>
-    <p>Base inicial publicada na Vercel para ligar a interface aos cálculos e simulações do Google Sheets.</p>
-    <div class="aviso">
-      Aviso de transparência: simulações, avaliações de troca e redirecionamentos para estoques parceiros seguem os critérios definidos no projeto.
+  <div class="container">
+    <header>
+      <h1>VeícMatch</h1>
+      <p>Informe seu carro atual, sua condição de pagamento e o modelo desejado.</p>
+    </header>
+
+    <form id="matchForm">
+      <!-- BLOCO 1: CARRO ATUAL -->
+      <div class="card">
+        <div class="section-title"><span class="badge">1</span> Seu carro na troca</div>
+        
+        <div class="field">
+          <label for="temCarro">Você vai dar um veículo na troca?</label>
+          <select id="temCarro" name="temCarro">
+            <option value="sim" selected>Sim, tenho um carro para troca</option>
+            <option value="nao">Não, compra sem carro na troca</option>
+          </select>
+        </div>
+
+        <div id="dadosCarroAtual">
+          <div class="grid-2">
+            <div class="field">
+              <label for="atualMarca">Marca</label>
+              <input type="text" id="atualMarca" placeholder="Ex.: Chevrolet" required />
+            </div>
+            <div class="field">
+              <label for="atualModelo">Modelo e versão</label>
+              <input type="text" id="atualModelo" placeholder="Ex.: Onix LT 1.0" required />
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="field">
+              <label for="atualAno">Ano modelo</label>
+              <input type="number" id="atualAno" min="2005" max="2027" placeholder="Ex.: 2020" required />
+            </div>
+            <div class="field">
+              <label for="atualKm">Quilometragem atual (km)</label>
+              <input type="number" id="atualKm" min="0" step="1000" placeholder="Ex.: 68000" required />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BLOCO 2: CONDIÇÃO FINANCEIRA -->
+      <div class="card">
+        <div class="section-title"><span class="badge">2</span> Entrada e parcela desejada</div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label for="entradaExtra">Dinheiro extra para entrada (R$)</label>
+            <input type="number" id="entradaExtra" min="0" step="500" value="0" placeholder="Ex.: 10000" />
+            <div class="helper">Deixe 0 se for usar apenas seu carro.</div>
+          </div>
+
+          <div class="field">
+            <label for="parcelaMax">Parcela máxima desejada (R$)</label>
+            <input type="number" id="parcelaMax" min="0" step="50" value="0" placeholder="Ex.: 1200" />
+            <div class="helper">Deixe 0 se não quiser financiar.</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="prazo">Prazo do financiamento</label>
+          <select id="prazo">
+            <option value="0">Sem financiamento (à vista / só troca + entrada)</option>
+            <option value="12">12x</option>
+            <option value="24">24x</option>
+            <option value="36">36x</option>
+            <option value="48" selected>48x</option>
+            <option value="60">60x</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- BLOCO 3: CARRO DESEJADO -->
+      <div class="card">
+        <div class="section-title"><span class="badge">3</span> Carro que você procura</div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label for="desejadoModelo">Marca / Modelo desejado</label>
+            <input type="text" id="desejadoModelo" placeholder="Ex.: HB20, Tracker, Corolla..." required />
+          </div>
+
+          <div class="field">
+            <label for="desejadoAnoMin">Ano mínimo desejado</label>
+            <input type="number" id="desejadoAnoMin" min="2010" max="2027" placeholder="Ex.: 2021" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="desejadoVersao">Versão ou observação (opcional)</label>
+          <input type="text" id="desejadoVersao" placeholder="Ex.: Turbo, SUV compacto, sedan executivo..." />
+        </div>
+
+        <div class="field">
+          <label for="whatsappCliente">Seu WhatsApp para receber as opções (opcional)</label>
+          <input type="tel" id="whatsappCliente" placeholder="(51) 99999-9999" />
+        </div>
+
+        <button type="submit" class="btn-primary" id="btnBuscar">Buscar meu Match de Troca</button>
+
+        <div class="aviso">
+          <strong>Transparência VeícMatch:</strong> Os valores de financiamento são simulações estimadas sujeitas à análise de crédito. A avaliação final do veículo usado depende de vistoria presencial na loja parceira.
+        </div>
+      </div>
+    </form>
+
+    <!-- RESULTADO DO MATCH -->
+    <div class="card" id="resultado">
+      <div class="section-title">Resultado da sua simulação</div>
+      <div class="summary-box" id="resumoFinanceiro"></div>
+      <div id="listaMatches"></div>
     </div>
   </div>
+
+  <script>
+    // COLE AQUI A URL DO SEU GOOGLE APPS SCRIPT QUANDO PUBLICAR COMO WEB APP
+    const APPS_SCRIPT_URL = "";
+
+    // Seu número de WhatsApp para atendimento consultivo (55 + DDD + número)
+    const SEU_WHATSAPP = "5551999999999";
+
+    // Taxas mensais definidas para o simulador VeícMatch
+    const TAXAS_MENSAIS = {
+      12: 0.019,
+      24: 0.020,
+      36: 0.021,
+      48: 0.022,
+      60: 0.023
+    };
+
+    const temCarroEl = document.getElementById("temCarro");
+    const dadosCarroAtualEl = document.getElementById("dadosCarroAtual");
+
+    temCarroEl.addEventListener("change", () => {
+      const ativo = temCarroEl.value === "sim";
+      dadosCarroAtualEl.style.display = ativo ? "block" : "none";
+      document.getElementById("atualMarca").required = ativo;
+      document.getElementById("atualModelo").required = ativo;
+      document.getElementById("atualAno").required = ativo;
+      document.getElementById("atualKm").required = ativo;
+    });
+
+    function calcularValorFinanciado(parcela, meses) {
+      if (!parcela || parcela <= 0 || !meses || meses <= 0) return 0;
+      const i = TAXAS_MENSAIS[meses] || 0.022;
+      // Valor Presente (Tabela Price)
+      return parcela * ((1 - Math.pow(1 + i, -meses)) / i);
+    }
+
+    function formatarMoeda(valor) {
+      return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    }
+
+    document.getElementById("matchForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById("btnBuscar");
+      btn.disabled = true;
+      btn.textContent = "Calculando viabilidade e buscando estoque...";
+
+      const temCarro = temCarroEl.value === "sim";
+      const entradaExtra = Number(document.getElementById("entradaExtra").value) || 0;
+      const parcelaMax = Number(document.getElementById("parcelaMax").value) || 0;
+      const prazo = Number(document.getElementById("prazo").value) || 0;
+
+      const poderFinanciamento = calcularValorFinanciado(parcelaMax, prazo);
+
+      const payload = {
+        temCarro,
+        atualMarca: temCarro ? document.getElementById("atualMarca").value.trim() : "",
+        atualModelo: temCarro ? document.getElementById("atualModelo").value.trim() : "",
+        atualAno: temCarro ? Number(document.getElementById("atualAno").value) : null,
+        atualKm: temCarro ? Number(document.getElementById("atualKm").value) : null,
+        entradaExtra,
+        parcelaMax,
+        prazo,
+        poderFinanciamento: Math.round(poderFinanciamento),
+        desejadoModelo: document.getElementById("desejadoModelo").value.trim(),
+        desejadoAnoMin: Number(document.getElementById("desejadoAnoMin").value) || null,
+        desejadoVersao: document.getElementById("desejadoVersao").value.trim(),
+        whatsappCliente: document.getElementById("whatsappCliente").value.trim()
+      };
+
+      try {
+        let resposta;
+
+        if (APPS_SCRIPT_URL) {
+          const res = await fetch(APPS_SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify(payload)
+          });
+          resposta = await res.json();
+        } else {
+          // Modo simulação local enquanto a URL do Google Sheets não é colada
+          const orcamentoSemTroca = entradaExtra + poderFinanciamento;
+          resposta = {
+            modoDemo: true,
+            mensagem: temCarro
+              ? `Recebemos os dados do seu ${payload.atualMarca} ${payload.atualModelo} (${payload.atualAno}, ${payload.atualKm.toLocaleString("pt-BR")} km). Somando sua entrada de ${formatarMoeda(entradaExtra)} e o potencial financiado de ${formatarMoeda(poderFinanciamento)}, vamos cruzar agora com a avaliação FIPE e o estoque das lojas parceiras para encontrar seu ${payload.desejadoModelo}.`
+              : `Seu potencial estimado de compra (entrada + financiamento) é de ${formatarMoeda(orcamentoSemTroca)}.`,
+            matches: []
+          };
+        }
+
+        renderizarResultado(payload, resposta);
+      } catch (err) {
+        alert("Não foi possível conectar com a base agora. Tente novamente em instantes.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Buscar meu Match de Troca";
+      }
+    });
+
+    function renderizarResultado(payload, resposta) {
+      const box = document.getElementById("resultado");
+      const resumo = document.getElementById("resumoFinanceiro");
+      const lista = document.getElementById("listaMatches");
+
+      resumo.textContent = resposta.mensagem;
+      lista.innerHTML = "";
+
+      if (resposta.matches && resposta.matches.length > 0) {
+        resposta.matches.forEach((carro) => {
+          const textoWhats = encodeURIComponent(
+            `Olá! Fiz uma simulação no VeícMatch. Tenho interesse no ${carro.modelo} ${carro.ano} (${formatarMoeda(carro.preco)}). ` +
+            (payload.temCarro ? `Meu carro na troca: ${payload.atualMarca} ${payload.atualModelo} ${payload.atualAno} (${payload.atualKm} km).` : "")
+          );
+
+          const item = document.createElement("div");
+          item.className = "match-item";
+          item.innerHTML = `
+            <h3>${carro.modelo} — ${carro.ano}</h3>
+            <div class="match-meta">${carro.km ? carro.km.toLocaleString("pt-BR") + " km • " : ""}${carro.loja || "Loja Parceira"}</div>
+            <div class="match-price">${formatarMoeda(carro.preco)}</div>
+            <a class="btn-whats" href="https://wa.me/${SEU_WHATSAPP}?text=${textoWhats}" target="_blank">Avançar com este Match no WhatsApp</a>
+          `;
+          lista.appendChild(item);
+        });
+      } else {
+        const textoWhats = encodeURIComponent(
+          `Olá! Fiz um pedido de Match no VeícMatch.\n` +
+          (payload.temCarro ? `• Meu carro: ${payload.atualMarca} ${payload.atualModelo} ${payload.atualAno} (${payload.atualKm} km)\n` : `• Sem carro na troca\n`) +
+          `• Entrada extra: ${formatarMoeda(payload.entradaExtra)}\n` +
+          `• Parcela desejada: ${formatarMoeda(payload.parcelaMax)} (${payload.prazo}x)\n` +
+          `• Procuro: ${payload.desejadoModelo} ${payload.desejadoAnoMin ? "a partir de " + payload.desejadoAnoMin : ""}`
+        );
+
+        lista.innerHTML = `
+          <div class="match-item">
+            <h3>Curadoria ativa nas lojas parceiras</h3>
+            <div class="match-meta">Já registramos seu perfil de troca e orçamento para localizar as melhores opções compatíveis na região.</div>
+            <a class="btn-whats" href="https://wa.me/${SEU_WHATSAPP}?text=${textoWhats}" target="_blank">Receber opções no meu WhatsApp</a>
+          </div>
+        `;
+      }
+
+      box.style.display = "block";
+      box.scrollIntoView({ behavior: "smooth" });
+    }
+  </script>
 </body>
 </html>
