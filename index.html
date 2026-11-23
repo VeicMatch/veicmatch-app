@@ -205,17 +205,6 @@
       margin-bottom: 6px;
     }
 
-    .match-plan {
-      font-size: 12.5px;
-      font-weight: 600;
-      color: #065f46;
-      background: #ecfdf5;
-      display: inline-block;
-      padding: 3px 8px;
-      border-radius: 6px;
-      margin-bottom: 8px;
-    }
-
     .match-price {
       font-size: 16px;
       font-weight: 700;
@@ -231,6 +220,28 @@
       text-decoration: none;
       border-radius: 8px;
       font-size: 13px;
+      font-weight: 600;
+    }
+
+    .mais-matches {
+      margin-top: 12px;
+    }
+
+    .mais-matches summary {
+      color: var(--accent);
+      cursor: pointer;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .btn-ajustar-busca {
+      margin: 10px 12px 0 0;
+      padding: 8px 0;
+      background: transparent;
+      border: 0;
+      color: var(--accent);
+      cursor: pointer;
+      font: inherit;
       font-weight: 600;
     }
   </style>
@@ -654,55 +665,69 @@
       const box = document.getElementById("resultado");
       const resumo = document.getElementById("resumoFinanceiro");
       const lista = document.getElementById("listaMatches");
+      const matches = Array.isArray(resposta.matches) ? resposta.matches : [];
+      const carroNaTroca = [payload.atualMarca, payload.atualModelo, payload.atualAno].filter(Boolean).join(" ");
+      const textoTroca = payload.temCarro && carroNaTroca ? ` Tenho um ${carroNaTroca} para dar na troca.` : "";
+      lista.replaceChildren();
 
-      resumo.textContent = resposta.mensagem;
-      lista.innerHTML = "";
+      if (matches.length > 0) {
+        resumo.textContent = "Curtiu algum carro? Peça ao VeicMatch para consultar a disponibilidade e apresentar sua proposta à loja.";
+        lista.append(criarOferta(matches[0], textoTroca));
 
-      if (resposta.matches && resposta.matches.length > 0) {
-        resposta.matches.forEach((carro) => {
-          const textoWhats = encodeURIComponent(
-            `Olá! Fiz uma simulação no VeícMatch. Tenho interesse no ${carro.modelo} ${carro.ano} (${formatarMoeda(carro.preco)}). ` +
-            (payload.temCarro
-              ? `Meu carro na troca: ${payload.atualMarca} ${payload.atualVersao} ${payload.atualAno} (${payload.atualKm} km, ${payload.situacaoQuitacao === "financiado" ? "financiado, falta " + formatarMoeda(payload.saldoDevedor) : "quitado"}, débitos doc: ${formatarMoeda(payload.valorDebitosDoc)}).`
-              : "")
-          );
-
-          const item = document.createElement("div");
-          item.className = "match-item";
-          item.innerHTML = `
-            <h3>${carro.modelo} — ${carro.ano}</h3>
-            <div class="match-meta">${carro.km ? carro.km.toLocaleString("pt-BR") + " km • " : ""}${carro.loja || "Loja Parceira"}</div>
-            <div class="match-plan">${carro.prazoSugerido || ""}</div>
-            <div class="match-price">${formatarMoeda(carro.preco)}</div>
-            <a class="btn-whats" href="https://wa.me/${SEU_WHATSAPP}?text=${textoWhats}" target="_blank">Avançar com este Match no WhatsApp</a>
-          `;
-          lista.appendChild(item);
-        });
+        if (matches.length > 1) {
+          const mais = document.createElement("details");
+          mais.className = "mais-matches";
+          const titulo = document.createElement("summary");
+          titulo.textContent = "Ver mais opções";
+          mais.append(titulo);
+          for (const carro of matches.slice(1)) mais.append(criarOferta(carro, textoTroca));
+          lista.append(mais);
+        }
       } else {
-        const textoWhats = encodeURIComponent(
-          `Olá! Fiz um pedido de Match no VeícMatch.\n` +
-          (payload.temCarro
-            ? `• Meu carro: ${payload.atualMarca} ${payload.atualVersao} ${payload.atualAno} (${payload.atualKm} km)\n` +
-              `• Quitação: ${payload.situacaoQuitacao === "financiado" ? "Financiado (falta " + formatarMoeda(payload.saldoDevedor) + ")" : "Quitado"}\n` +
-              `• IPVA/Licenc./Multas: ${formatarMoeda(payload.valorDebitosDoc)}\n` +
-              `• Checklist: Lataria (${payload.estadoLataria}), Pneus (${payload.estadoPneus}), Estofados (${payload.estadoEstofados}), Elétrica (${payload.estadoEletrica}), Mecânica (${payload.estadoMecanica}), Manual/Revisões (${payload.estadoManualRevisoes}), Histórico (${payload.historicoSinistro})\n`
-            : `• Sem carro na troca\n`) +
-          `• Entrada extra: ${formatarMoeda(payload.entradaExtra)}\n` +
-          `• Parcela máxima: ${formatarMoeda(payload.parcelaMax)}/mês\n` +
-          `• Procuro: ${payload.desejadoMarca} ${payload.desejadoModelo} ${payload.desejadoVersao} ${payload.desejadoAnoMin ? "(a partir de " + payload.desejadoAnoMin + ")" : ""}`
-        );
-
-        lista.innerHTML = `
-          <div class="match-item">
-            <h3>Curadoria ativa nas lojas parceiras</h3>
-            <div class="match-meta">Já registramos todos os itens do checklist, quitação, débitos e capacidade de parcela para localizar opções compatíveis na região.</div>
-            <a class="btn-whats" href="https://wa.me/${SEU_WHATSAPP}?text=${textoWhats}" target="_blank">Receber opções no meu WhatsApp</a>
-          </div>
-        `;
+        resumo.textContent = "Ainda não encontramos uma opção no estoque parceiro com os filtros escolhidos.";
+        const busca = payload.desejadoVersao || [payload.desejadoMarca, payload.desejadoModelo].filter(Boolean).join(" ");
+        const anoMin = payload.desejadoAnoMin ? ` a partir de ${payload.desejadoAnoMin}` : "";
+        const mensagem = `Olá! Estou procurando ${busca || "um carro"}${anoMin}.${textoTroca} Podem me ajudar a encontrar uma opção?`;
+        const ajustar = document.createElement("button");
+        ajustar.type = "button";
+        ajustar.className = "btn-ajustar-busca";
+        ajustar.textContent = "Ajustar a busca";
+        ajustar.addEventListener("click", () => document.getElementById("desejadoMarca").focus());
+        lista.append(ajustar, criarLinkWhatsApp("Pedir ajuda pelo WhatsApp", mensagem));
       }
 
       box.style.display = "block";
       box.scrollIntoView({ behavior: "smooth" });
+    }
+
+    function criarOferta(carro, textoTroca) {
+      const item = document.createElement("article");
+      item.className = "match-item";
+      const nome = [carro.modelo, Number(carro.ano) > 0 ? carro.ano : ""].filter(Boolean).join(" ");
+      const titulo = document.createElement("h3");
+      titulo.textContent = nome;
+      const meta = document.createElement("div");
+      meta.className = "match-meta";
+      const km = Number(carro.km);
+      meta.textContent = [carro.loja, km > 0 ? `${km.toLocaleString("pt-BR")} km` : "", "Disponibilidade a confirmar"]
+        .filter(Boolean).join(" • ");
+      const preco = document.createElement("div");
+      preco.className = "match-price";
+      preco.textContent = Number(carro.preco) > 0 ? formatarMoeda(carro.preco) : "Preço a confirmar";
+      const loja = carro.loja ? ` da loja ${carro.loja}` : "";
+      const mensagem = `Olá! Tenho interesse no ${nome}${loja} que apareceu no VeicMatch.${textoTroca} Podem confirmar a disponibilidade e apresentar minha proposta à loja?`;
+      item.append(titulo, meta, preco, criarLinkWhatsApp("Pedir envio da proposta à loja", mensagem));
+      return item;
+    }
+
+    function criarLinkWhatsApp(rotulo, mensagem) {
+      const link = document.createElement("a");
+      link.className = "btn-whats";
+      link.href = `https://wa.me/${SEU_WHATSAPP}?text=${encodeURIComponent(mensagem)}`;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.textContent = rotulo;
+      return link;
     }
   </script>
 </body>
