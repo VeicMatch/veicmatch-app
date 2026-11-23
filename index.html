@@ -185,6 +185,21 @@
       line-height: 1.5;
     }
 
+    .pre-avaliacao {
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    .pre-avaliacao h3 { margin: 0 0 6px; font-size: 16px; }
+    .pre-avaliacao p { margin: 6px 0 0; }
+    .pre-avaliacao .faixa-troca { color: var(--primary); font-size: 22px; font-weight: 700; }
+    .dados-pagamento { margin-bottom: 14px; }
+    .linhas-financeiras { display: grid; gap: 6px; margin: 10px 0 0; }
+    .linhas-financeiras div { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; }
+    .linhas-financeiras dd { margin: 0; font-weight: 600; }
+
     .match-item {
       border: 1px solid #e2e8f0;
       border-radius: 10px;
@@ -471,14 +486,12 @@
 
         <button type="submit" class="btn-primary" id="btnBuscar">Buscar meu Match de Troca</button>
 
-        <div class="aviso">
-          <strong>Transparência VeícMatch:</strong> Simulação estimada sujeita à análise de crédito e vistoria presencial com conferência de débitos/gravame na loja parceira.
-        </div>
       </div>
     </form>
 
     <div class="card" id="resultado">
       <div class="section-title">Resultado da sua simulação</div>
+      <div id="resumoSimulacao"></div>
       <div class="summary-box" id="resumoFinanceiro"></div>
       <div id="listaMatches"></div>
     </div>
@@ -1213,6 +1226,84 @@
       }
     });
 
+    function adicionarLinhaFinanceira(lista, rotulo, valor) {
+      const linha = document.createElement("div");
+      const termo = document.createElement("dt");
+      const detalhe = document.createElement("dd");
+      termo.textContent = rotulo;
+      detalhe.textContent = valor;
+      linha.append(termo, detalhe);
+      lista.append(linha);
+    }
+
+    function renderizarResumoSimulacao(payload, avaliacao, carroNaTroca) {
+      const resumo = document.getElementById("resumoSimulacao");
+      resumo.replaceChildren();
+
+      if (payload.temCarro) {
+        const cartao = document.createElement("section");
+        cartao.className = "pre-avaliacao";
+        const titulo = document.createElement("h3");
+        titulo.textContent = "Pré-avaliação do seu carro";
+        const nome = document.createElement("p");
+        nome.textContent = carroNaTroca;
+        cartao.append(titulo, nome);
+
+        const quitacao = Math.max(0, payload.saldoDevedor);
+        const outrosDebitos = Math.max(0, payload.valorDebitosDoc);
+        const totalDebitos = quitacao + outrosDebitos;
+        const valorBruto = avaliacao?.valorBruto;
+        const valor = document.createElement("p");
+
+        if (Number.isFinite(valorBruto) && valorBruto > 0) {
+          const maximo = Math.round(Math.max(0, valorBruto * 1.05 - totalDebitos) / 100) * 100;
+          const minimo = Math.round(Math.max(0, valorBruto * 0.90 - totalDebitos) / 100) * 100;
+          const moeda = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+          valor.className = "faixa-troca";
+          valor.textContent = maximo === minimo ? moeda.format(maximo) : `${moeda.format(maximo)} a ${moeda.format(minimo)}`;
+          cartao.append(valor);
+          if (totalDebitos > 0) {
+            const legenda = document.createElement("p");
+            legenda.textContent = "Valor estimado para usar como entrada";
+            cartao.append(legenda);
+          }
+        } else {
+          valor.textContent = "Não conseguimos estimar a troca com os dados disponíveis.";
+          cartao.append(valor);
+        }
+
+        if (totalDebitos > 0) {
+          const descontos = document.createElement("dl");
+          descontos.className = "linhas-financeiras";
+          if (quitacao > 0) adicionarLinhaFinanceira(descontos, "Quitação do financiamento", `−${formatarMoeda(quitacao)}`);
+          if (outrosDebitos > 0) adicionarLinhaFinanceira(descontos, "Outros débitos", `−${formatarMoeda(outrosDebitos)}`);
+          cartao.append(descontos);
+        }
+
+        const nota = document.createElement("p");
+        nota.textContent = "A loja confirma o valor após a vistoria.";
+        cartao.append(nota);
+        resumo.append(cartao);
+      }
+
+      if (payload.entradaExtra > 0 || payload.parcelaMax > 0) {
+        const pagamento = document.createElement("div");
+        pagamento.className = "dados-pagamento";
+        const valores = document.createElement("dl");
+        valores.className = "linhas-financeiras";
+        if (payload.entradaExtra > 0) adicionarLinhaFinanceira(valores, "Entrada em dinheiro", formatarMoeda(payload.entradaExtra));
+        pagamento.append(valores);
+        if (payload.parcelaMax > 0) {
+          adicionarLinhaFinanceira(valores, "Parcela mensal desejada", `até ${formatarMoeda(payload.parcelaMax)}`);
+          const aviso = document.createElement("p");
+          aviso.className = "aviso";
+          aviso.textContent = "Para simular o financiamento com as instituições financeiras, envie seu CPF e sua data de nascimento diretamente à loja escolhida quando decidir avançar.";
+          pagamento.append(aviso);
+        }
+        resumo.append(pagamento);
+      }
+    }
+
     function renderizarResultado(payload, resposta, cidade) {
       const box = document.getElementById("resultado");
       const resumo = document.getElementById("resumoFinanceiro");
@@ -1220,6 +1311,7 @@
       const matches = Array.isArray(resposta.matches) ? ordenarPorProximidade(resposta.matches, cidade) : [];
       const carroNaTroca = [payload.atualMarca, payload.atualModelo, payload.atualAno].filter(Boolean).join(" ");
       const textoTroca = payload.temCarro && carroNaTroca ? ` Tenho um ${carroNaTroca} para dar na troca.` : "";
+      renderizarResumoSimulacao(payload, resposta.avaliacaoTroca, carroNaTroca);
       lista.replaceChildren();
 
       if (matches.length > 0) {
