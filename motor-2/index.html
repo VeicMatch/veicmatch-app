@@ -29,6 +29,9 @@ a{color:var(--brand)}:focus-visible{outline:3px solid #227c62;outline-offset:2px
 .preco{font-size:25px;font-weight:800;color:var(--brand);margin:.25rem 0}dl{margin:12px 0}dt{font-weight:720}dd{margin:0 0 8px;white-space:pre-line}ul{margin:4px 0 10px;padding-left:22px}
 [hidden]{display:none!important}
 @media(max-width:580px){.grid,.grid.prioridades{grid-template-columns:1fr}.card button[type=submit]{width:100%}}
+.subtitulo-troca {font-weight:750;margin:18px 0 8px}
+#campo-troca > .campo, #campo-troca > .grid {margin-bottom:12px}
+#estado-troca:empty {display:none}
 </style>
 </head>
 <body>
@@ -84,10 +87,142 @@ a{color:var(--brand)}:focus-visible{outline:3px solid #227c62;outline-offset:2px
         <option value="">Selecione</option><option value="sim">Sim</option><option value="nao">Não</option>
       </select>
     </label>
-    <div id="campo-troca" hidden>
-      <p>Informe a estimativa líquida da sua troca. <a href="https://docs.google.com/spreadsheets/d/1IuzTL24tkOt24CFsMJkXFd94l7tXSnj_S2ZnT7jM-AU/edit" target="_blank" rel="noopener noreferrer">Abrir calculadora de troca</a></p>
-      <label class="campo">Valor líquido estimado da troca (R$)<input name="troca" type="number" min="0" max="10000000" step=".01" disabled required></label>
-    </div>
+    <fieldset id="campo-troca" hidden disabled>
+      <div class="subtitulo-troca">Dados básicos do veículo</div>
+
+      <div class="grid">
+        <div class="campo">
+          <label for="atualMarca">Marca</label>
+          <select id="atualMarca" name="atualMarca" required>
+            <option value="">Selecione a marca</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label for="atualModelo">Modelo base</label>
+          <select id="atualModelo" name="atualModelo" disabled required>
+            <option value="">Selecione a marca primeiro</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="campo">
+          <label for="atualAno">Ano do modelo</label>
+          <select id="atualAno" name="atualAno" disabled required>
+            <option value="">Selecione o modelo primeiro</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label for="atualKm">Quilometragem atual (km)</label>
+          <input type="number" id="atualKm" name="atualKm" min="0" step="1" placeholder="Ex.: 65000" required />
+        </div>
+      </div>
+
+      <div class="campo">
+        <label for="atualVersao">Versão oficial FIPE</label>
+        <select id="atualVersao" name="atualVersao" disabled required>
+          <option value="">Selecione o ano primeiro</option>
+        </select>
+      </div>
+
+      <div class="subtitulo-troca">Checklist de integridade e procedência</div>
+
+      <div class="grid">
+        <div class="campo">
+          <label for="estadoLataria">Lataria e pintura</label>
+          <select id="estadoLataria" name="estadoLataria" required>
+            <option value="sem_avarias" selected>Sem avarias</option>
+            <option value="pequenos_detalhes">Pequenos detalhes / retoques</option>
+            <option value="avarias_funilaria">Com avarias / funilaria</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label for="estadoPneus">Pneus</label>
+          <select id="estadoPneus" name="estadoPneus" required>
+            <option value="bons" selected>Bons</option>
+            <option value="meia_vida">Meia vida</option>
+            <option value="precisando_trocar">Precisando trocar</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="campo">
+          <label for="estadoEstofados">Estofados e interior</label>
+          <select id="estadoEstofados" name="estadoEstofados" required>
+            <option value="sem_avarias" selected>Sem avarias</option>
+            <option value="desgaste_leve">Desgaste leve de uso</option>
+            <option value="avarias_manchas">Avarias, rasgos ou manchas</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label for="estadoEletrica">Elétrica e acessórios</label>
+          <select id="estadoEletrica" name="estadoEletrica" required>
+            <option value="sem_avarias" selected>Sem avarias</option>
+            <option value="pendencia_leve">Pendência leve</option>
+            <option value="defeito_relevante">Defeito relevante</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="campo">
+          <label for="estadoMecanica">Motor e câmbio</label>
+          <select id="estadoMecanica" name="estadoMecanica" required>
+            <option value="sem_avarias" selected>Sem avarias</option>
+            <option value="atencao_preventiva">Atenção preventiva / revisão</option>
+            <option value="reparo_corretivo">Necessita reparo corretivo</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label for="estadoManualRevisoes">Manual, chave cópia e revisões</label>
+          <select id="estadoManualRevisoes" name="estadoManualRevisoes" required>
+            <option value="completo" selected>Completo</option>
+            <option value="parcial">Parcial</option>
+            <option value="sem_itens">Sem manual / chave cópia</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="campo">
+        <label for="historicoSinistro">Histórico de leilão ou sinistro</label>
+        <select id="historicoSinistro" name="historicoSinistro" required>
+          <option value="sem_apontamento" selected>Sem apontamento</option>
+          <option value="sinistro_recuperado">Sinistro / passagem por seguradora</option>
+          <option value="leilao_monta">Leilão / média ou grande monta</option>
+        </select>
+      </div>
+
+      <div class="subtitulo-troca">Quitação, IPVA, licenciamento e multas</div>
+
+      <div class="grid">
+        <div class="campo">
+          <label for="situacaoQuitacao">O carro está quitado ou financiado?</label>
+          <select id="situacaoQuitacao" name="situacaoQuitacao" required>
+            <option value="quitado" selected>Quitado</option>
+            <option value="financiado">Financiado (possui saldo devedor)</option>
+          </select>
+        </div>
+
+        <div class="campo" id="campoSaldoDevedor" hidden>
+          <label for="saldoDevedor">Quanto falta para quitar hoje? (R$)</label>
+          <input type="number" id="saldoDevedor" name="saldoDevedor" disabled min="0" step=".01" value="0" placeholder="Ex.: 18500" />
+        </div>
+      </div>
+
+      <div class="campo">
+        <label for="valorDebitosDoc">IPVA, licenciamento e multas pendentes (R$)</label>
+        <input type="number" id="valorDebitosDoc" name="valorDebitosDoc" required min="0" step=".01" value="0" placeholder="0 se tudo estiver pago" />
+        <div class="meta">Some IPVA em aberto/parcelas, licenciamento e multas caso existam.</div>
+      </div>
+      <p id="estado-troca" class="meta" role="status"></p>
+      <button id="repetir-fipe" class="secundario" type="button" hidden>Tentar carregar de novo</button>
+    </fieldset>
   </section>
   <section class="card" aria-labelledby="titulo-pagamento">
     <h2 id="titulo-pagamento">Capacidade de pagamento</h2>
@@ -101,6 +236,7 @@ a{color:var(--brand)}:focus-visible{outline:3px solid #227c62;outline-offset:2px
 <section id="resultados" aria-labelledby="titulo-resultados" hidden>
   <h2 id="titulo-resultados" tabindex="-1">Carros indicados para o seu perfil</h2>
   <p id="resumo" class="resumo" role="status"></p>
+  <div id="previa-troca"></div>
   <div id="ofertas"></div>
   <button class="secundario" type="button" id="editar">Rever minhas respostas</button>
 </section>
@@ -108,6 +244,7 @@ a{color:var(--brand)}:focus-visible{outline:3px solid #227c62;outline-offset:2px
 <script>
 'use strict';
 const api = document.querySelector('meta[name="veicmatch-motor-2-api"]').content.trim();
+const apiFipe = 'https://script.google.com/macros/s/AKfycbxnLLJ5Sbg__atv4CnbwXXyAf9iRmi0xs0WinKucyHTEw5kn6USDa4EwQvdnL3bf7a2/exec';
 const form = document.getElementById('questionario');
 const estado = document.getElementById('estado');
 const saida = document.getElementById('resultados');
@@ -124,6 +261,26 @@ const tiposEntrega = new Map([
   ['Entregas leves', 'Entregas leves'],
   ['Entregas com mais carga', 'Entregas pesadas']
 ]);
+const dadosTroca = document.getElementById('campo-troca');
+const estadoTroca = document.getElementById('estado-troca');
+const repetirFipe = document.getElementById('repetir-fipe');
+const etapasFipe = [
+  ['atualMarca', 'marcas', 'Selecione a marca'],
+  ['atualModelo', 'modelos', 'Selecione o modelo'],
+  ['atualAno', 'anos', 'Selecione o ano'],
+  ['atualVersao', 'versoes', 'Selecione a versão exata']
+];
+const ajustesTroca = {
+  estadoLataria: { pequenos_detalhes: -0.02, avarias_funilaria: -0.05 },
+  estadoPneus: { meia_vida: -0.015, precisando_trocar: -0.025 },
+  estadoEstofados: { desgaste_leve: -0.015, avarias_manchas: -0.035 },
+  estadoEletrica: { pendencia_leve: -0.01, defeito_relevante: -0.03 },
+  estadoMecanica: { atencao_preventiva: -0.025, reparo_corretivo: -0.06 },
+  estadoManualRevisoes: { parcial: -0.01, sem_itens: -0.02 },
+  historicoSinistro: { sinistro_recuperado: -0.08, leilao_monta: -0.15 }
+};
+let consultaFipe;
+let etapaComErro;
 
 function elemento(tag, texto, classe) {
   const no = document.createElement(tag);
@@ -145,6 +302,93 @@ async function consultar(dados) {
   if (!json.ok) throw new Error(json.mensagem || 'Não foi possível concluir a busca.');
   return json;
 }
+async function carregarFipe(indice) {
+  consultaFipe?.abort();
+  const consulta = new AbortController();
+  consultaFipe = consulta;
+  repetirFipe.hidden = true;
+  for (const [nome, , rotulo] of etapasFipe.slice(indice)) {
+    preencher(nome, [], rotulo);
+    campo(nome).disabled = true;
+  }
+  const [nome, action, rotulo] = etapasFipe[indice];
+  const params = new URLSearchParams({ action });
+  ['marca', 'modelo', 'ano'].slice(0, indice).forEach((chave, i) => {
+    params.set(chave, campo(etapasFipe[i][0]).value);
+  });
+  estadoTroca.textContent = '';
+  if ([...params.values()].some(valor => !valor)) return;
+  estadoTroca.textContent = 'Carregando dados da FIPE…';
+  try {
+    const resposta = await fetch(apiFipe + '?' + params, { credentials: 'omit', signal: consulta.signal });
+    if (!resposta.ok) throw new Error('FIPE indisponível');
+    const json = await resposta.json();
+    if (!json.ok || !Array.isArray(json.dados)) throw new Error('Resposta FIPE inválida');
+    if (consulta.signal.aborted) return;
+    const lista = json.dados;
+    const select = campo(nome);
+    select.replaceChildren(new Option(rotulo, ''), ...lista.map(item => {
+      const opcao = new Option(item.versao ?? item, item.versao ?? item);
+      if (nome === 'atualVersao') opcao.dataset.preco = item.precoFipe;
+      return opcao;
+    }));
+    select.disabled = lista.length === 0;
+    estadoTroca.textContent = lista.length ? '' : 'Nenhuma opção FIPE encontrada para essa seleção.';
+  } catch (erro) {
+    if (consulta.signal.aborted) return;
+    estadoTroca.textContent = 'Não foi possível carregar os dados da FIPE.';
+    etapaComErro = indice;
+    repetirFipe.hidden = false;
+  } finally {
+    if (consultaFipe === consulta) consultaFipe = undefined;
+  }
+}
+function atualizarQuitacao() {
+  const financiado = campo('situacaoQuitacao').value === 'financiado';
+  document.getElementById('campoSaldoDevedor').hidden = !financiado;
+  campo('saldoDevedor').disabled = !financiado;
+  campo('saldoDevedor').required = financiado;
+  if (!financiado) campo('saldoDevedor').value = '0';
+}
+function estimarTroca(dados) {
+  const campos = etapasFipe.map(([nome]) => dados.get(nome));
+  if (campos.some(valor => !valor)) throw new Error('Selecione marca, modelo, ano e versão do veículo na troca.');
+  const [marca, modelo, ano] = campos;
+  const preco = Number(campo('atualVersao').selectedOptions[0]?.dataset.preco);
+  if (!Number.isFinite(preco) || preco <= 0) throw new Error('A versão selecionada está sem preço FIPE para a avaliação.');
+  const km = Number(dados.get('atualKm'));
+  // Mesmas faixas da pré-avaliação do Motor 1.
+  const idade = Math.max(1, 2026 - Number(ano));
+  const kmAno = Math.round(km / idade);
+  let fator = 0.85;
+  if (idade > 10) fator -= 0.03;
+  if (kmAno > 28000) fator -= 0.08;
+  else if (kmAno > 20000) fator -= 0.04;
+  else if (kmAno < 10000) fator += 0.02;
+  if (km > 180000) fator -= 0.06;
+  else if (km > 120000) fator -= 0.03;
+  for (const [nome, ajustes] of Object.entries(ajustesTroca)) fator += ajustes[dados.get(nome)] ?? 0;
+  const bruto = Math.round(preco * Math.max(0.45, fator) * 0.97);
+  const quitacao = Number(dados.get('saldoDevedor'));
+  const outrosDebitos = Number(dados.get('valorDebitosDoc'));
+  const debitos = quitacao + outrosDebitos;
+  return { nome: [marca, modelo, ano].join(' '), bruto, quitacao, outrosDebitos, debitos, liquido: Math.max(0, bruto - debitos) };
+}
+function montarPreAvaliacao(avaliacao) {
+  const cartao = elemento('article', null, 'card');
+  const { nome, bruto, quitacao, outrosDebitos, debitos } = avaliacao;
+  const arredondar = fator => Math.round(Math.max(0, bruto * fator - debitos) / 100) * 100;
+  const minimo = arredondar(0.90);
+  const maximo = arredondar(1.05);
+  const faixa = minimo === maximo ? moeda.format(minimo) : moeda.format(minimo) + ' a ' + moeda.format(maximo);
+  cartao.append(elemento('h3', 'Pré-avaliação do seu carro'), elemento('p', nome), elemento('p', faixa, 'preco'));
+  const detalhes = elemento('dl');
+  if (quitacao > 0) acrescentar(detalhes, 'Quitação do financiamento', '−' + moeda.format(quitacao));
+  if (outrosDebitos > 0) acrescentar(detalhes, 'Outros débitos', '−' + moeda.format(outrosDebitos));
+  acrescentar(detalhes, 'Valor estimado usado na busca', moeda.format(avaliacao.liquido));
+  cartao.append(detalhes, elemento('p', 'A loja confirma o valor após a vistoria.', 'meta'));
+  return cartao;
+}
 function syncCondicionais() {
   const entrega = campo('missao').value === grupoEntregas;
   const tipo = campo('tipoEntrega');
@@ -156,8 +400,9 @@ function syncCondicionais() {
   campo('aplicativo').disabled = !temTipo;
   if (!temTipo) campo('aplicativo').value = '';
   const troca = campo('temTroca').value === 'sim';
-  document.getElementById('campo-troca').hidden = !troca;
-  campo('troca').disabled = !troca;
+  dadosTroca.hidden = !troca;
+  dadosTroca.disabled = !troca;
+  if (troca && campo('atualMarca').options.length === 1 && !consultaFipe && repetirFipe.hidden) carregarFipe(0);
 }
 async function iniciar() {
   if (!/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(api)) {
@@ -243,7 +488,7 @@ function montarOferta(item) {
   }
   return card;
 }
-function mostrarResposta(resposta) {
+function mostrarResposta(resposta, avaliacao) {
   const resumo = document.getElementById('resumo');
   const contagem = resposta.total === 1 ? '1 modelo compatível.' : resposta.total + ' modelos compatíveis. Veja até três indicações.';
   const mensagens = {
@@ -258,12 +503,20 @@ function mostrarResposta(resposta) {
       + criterio + ', veja as opções próximas encontradas no estoque.';
   } else resumo.textContent = mensagens[resposta.situacao] || contagem;
   document.getElementById('ofertas').replaceChildren(...resposta.resultados.map(montarOferta));
+  const previa = document.getElementById('previa-troca');
+  previa.replaceChildren();
+  if (avaliacao) previa.append(montarPreAvaliacao(avaliacao));
   saida.hidden = false;
   document.getElementById('titulo-resultados').focus();
 }
 campo('missao').addEventListener('change', syncCondicionais);
 campo('tipoEntrega').addEventListener('change', syncCondicionais);
 campo('temTroca').addEventListener('change', syncCondicionais);
+etapasFipe.slice(0, -1).forEach(([nome], indice) => {
+  campo(nome).addEventListener('change', () => carregarFipe(indice + 1));
+});
+campo('situacaoQuitacao').addEventListener('change', atualizarQuitacao);
+repetirFipe.addEventListener('click', () => carregarFipe(etapaComErro));
 document.getElementById('editar').addEventListener('click', () => campo('missao').focus());
 form.addEventListener('submit', async evento => {
   evento.preventDefault();
@@ -280,6 +533,17 @@ form.addEventListener('submit', async evento => {
     return;
   }
   const temTroca = dados.get('temTroca') === 'sim';
+  let avaliacao;
+  if (temTroca) {
+    try {
+      avaliacao = estimarTroca(dados);
+      estadoTroca.textContent = '';
+    } catch (erro) {
+      estadoTroca.textContent = erro.message;
+      dadosTroca.scrollIntoView({ block: 'nearest' });
+      return;
+    }
+  }
   const uso = dados.get('missao');
   const missao = uso === grupoEntregas ? dados.get('tipoEntrega') : uso;
   const perfil = {
@@ -287,7 +551,7 @@ form.addEventListener('submit', async evento => {
     contexto: dados.get('contexto'), prioridades, aplicativo: dados.get('aplicativo') || '',
     motivacao: dados.get('motivacao'), carroceria: dados.get('carroceria'), cambio: dados.get('cambio'),
     combustivel: dados.get('combustivel'), ano: Number(dados.get('ano')), aversoes: dados.getAll('aversoes'),
-    temTroca, troca: temTroca ? Number(dados.get('troca')) : 0,
+    temTroca, troca: avaliacao?.liquido ?? 0,
     entrada: Number(dados.get('entrada')), parcela: Number(dados.get('parcela'))
   };
   saida.hidden = true;
@@ -297,7 +561,7 @@ form.addEventListener('submit', async evento => {
   try {
     const resposta = await consultar(perfil);
     estado.textContent = '';
-    mostrarResposta(resposta);
+    mostrarResposta(resposta, avaliacao);
   } catch (erro) {
     estado.textContent = erro.message || 'Não foi possível concluir a busca.';
   } finally {
@@ -308,4 +572,4 @@ form.addEventListener('submit', async evento => {
 iniciar();
 </script>
 </body>
-    </html>
+</html>
