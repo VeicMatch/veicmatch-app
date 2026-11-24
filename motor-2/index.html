@@ -50,6 +50,7 @@ a{color:var(--brand)}:focus-visible{outline:3px solid #227c62;outline-offset:2px
       <label class="campo">Uso principal<select name="missao" required></select></label>
       <label class="campo">Pessoas no uso principal<select name="pessoas" required></select><small>Conte também quem dirige. Escolha 2 para 1–2 pessoas e 4 para 3–4.</small></label>
       <label class="campo">Onde vai rodar mais?<select name="contexto" required></select></label>
+      <label class="campo" id="campo-tipo-entrega" hidden>Tipo de entrega<select name="tipoEntrega" required disabled></select></label>
       <label class="campo" id="campo-aplicativo" hidden>Aplicativo de entregas<select name="aplicativo" disabled></select></label>
     </div>
     <fieldset>
@@ -118,6 +119,11 @@ const descricaoAversao = {
   Desempenho: 'Pouco desempenho', Revenda: 'Revenda mais difícil'
 };
 const campo = nome => form.elements.namedItem(nome);
+const grupoEntregas = 'Aplicativos de entregas';
+const tiposEntrega = new Map([
+  ['Entregas leves', 'Entregas leves'],
+  ['Entregas com mais carga', 'Entregas pesadas']
+]);
 
 function elemento(tag, texto, classe) {
   const no = document.createElement(tag);
@@ -140,10 +146,15 @@ async function consultar(dados) {
   return json;
 }
 function syncCondicionais() {
-  const entrega = ['Entregas leves', 'Entregas com mais carga'].includes(campo('missao').value);
-  document.getElementById('campo-aplicativo').hidden = !entrega;
-  campo('aplicativo').disabled = !entrega;
-  if (!entrega) campo('aplicativo').value = '';
+  const entrega = campo('missao').value === grupoEntregas;
+  const tipo = campo('tipoEntrega');
+  document.getElementById('campo-tipo-entrega').hidden = !entrega;
+  tipo.disabled = !entrega;
+  if (!entrega) tipo.value = '';
+  const temTipo = entrega && tiposEntrega.has(tipo.value);
+  document.getElementById('campo-aplicativo').hidden = !temTipo;
+  campo('aplicativo').disabled = !temTipo;
+  if (!temTipo) campo('aplicativo').value = '';
   const troca = campo('temTroca').value === 'sim';
   document.getElementById('campo-troca').hidden = !troca;
   campo('troca').disabled = !troca;
@@ -156,7 +167,13 @@ async function iniciar() {
   try {
     const config = await consultar();
     document.getElementById('lista-cidades').replaceChildren(...config.cidades.map(nome => new Option(nome, nome)));
-    preencher('missao', config.missoes);
+    const missoes = config.missoes.map(missao => tiposEntrega.has(missao) ? grupoEntregas : missao);
+    preencher('missao', [...new Set(missoes)]);
+    campo('tipoEntrega').replaceChildren(
+      new Option('Selecione o tipo de entrega', ''),
+      ...[...tiposEntrega].filter(([valor]) => config.missoes.includes(valor))
+        .map(([valor, rotulo]) => new Option(rotulo, valor))
+    );
     preencher('pessoas', config.lotacoes);
     preencher('contexto', config.contextos);
     preencher('aplicativo', config.aplicativos, 'Ver todas as plataformas possíveis');
@@ -174,119 +191,4 @@ async function iniciar() {
     }));
     syncCondicionais();
     estado.textContent = '';
-    form.hidden = false;
-  } catch (erro) {
-    estado.textContent = erro.message || 'Não foi possível carregar o questionário.';
-  }
-}
-function acrescentar(lista, titulo, valor) {
-  if (valor != null && valor !== '') lista.append(elemento('dt', titulo), elemento('dd', valor));
-}
-function montarOferta(item) {
-  const card = elemento('article', null, 'card');
-  card.append(elemento('h3', item.nome));
-  const ano = Number.isFinite(item.ano) ? item.ano : 'Ano a confirmar';
-  card.append(elemento('p', [item.versao, ano, item.carroceria, item.cambio || 'Câmbio a confirmar',
-    item.combustivel || 'Combustível a confirmar', item.lugares + ' lugares'].filter(Boolean).join(' · '), 'meta'));
-  card.append(elemento('p', moeda.format(item.preco), 'preco'), elemento('p', item.origemPreco, 'meta'));
-  card.append(elemento('p', item.preferencial ? 'Carroceria ou categoria preferencial para o uso selecionado.' : 'Compatível com o uso e a lotação informados.'));
-  const detalhes = elemento('dl');
-  if (item.adicional != null && item.adicional > 0) acrescentar(detalhes, 'Valor adicional necessário', moeda.format(item.adicional));
-  if (item.cobertoPelaEntrada) acrescentar(detalhes, 'Pagamento', 'Coberto pela entrada informada');
-  else if (item.planos.length) acrescentar(detalhes, 'Parcelas estimadas', item.planos.map(p => p.meses + '× de ' + moeda.format(p.valor)).join('\n'));
-  if (item.oferta) {
-    const anuncio = item.oferta;
-    const distancia = anuncio.distancia == null ? '' : numero.format(anuncio.distancia) + ' km em linha reta' + (anuncio.outraRegiao ? ' · Outra região' : '');
-    acrescentar(detalhes, 'Loja', [anuncio.loja, anuncio.municipio, distancia].filter(Boolean).join(' · '));
-    acrescentar(detalhes, 'Quilometragem', anuncio.km == null ? 'A confirmar' : numero.format(anuncio.km) + ' km');
-    acrescentar(detalhes, 'Condição do preço', anuncio.condicao);
-  }
-  const mostrarNota = n => n == null ? 'a confirmar' : numero.format(n) + '/10';
-  acrescentar(detalhes, 'Afinidade', mostrarNota(item.afinidade));
-  acrescentar(detalhes, 'Suas prioridades', item.prioridades.map(p => p.atributo + ' · ' + mostrarNota(p.nota)).join('\n'));
-  acrescentar(detalhes, 'O que você prefere evitar', item.aversoes.map(p => descricaoAversao[p.atributo] + ' · '
-    + (p.nota == null ? 'a confirmar' : (p.nota < p.referencia ? 'ponto de atenção' : 'atendido pela nota') + ' (' + mostrarNota(p.nota) + ')')).join('\n'));
-  acrescentar(detalhes, 'Pontos positivos', item.positivos || 'A confirmar na ficha');
-  acrescentar(detalhes, 'Pontos de atenção', item.atencao || 'A confirmar na ficha');
-  acrescentar(detalhes, 'Consumo', item.consumo || 'A confirmar na ficha');
-  acrescentar(detalhes, 'Porta-malas', Number(item.portaMalas) > 0 ? item.portaMalas + ' L' : '');
-  card.append(detalhes);
-  if (item.aplicativo) {
-    const { plataformas, validarPicape, regra, validarLoggi, passageiros } = item.aplicativo;
-    const texto = ['Pré-seleção para ' + plataformas.join(' · ') + '.', regra ? 'Condição da lista: ' + regra + '.' : '',
-      validarPicape ? 'Picape no Mercado Livre: validação pendente. Confirme com a plataforma se ela aceita a versão e o fechamento completo da caçamba com baú ou tampa rígida.' : '',
-      validarLoggi ? 'Na Loggi, confira o limite de idade da sua praça.' : '',
-      passageiros ? 'Confirme cidade, categoria, ano de fabricação, quatro portas, lotação no CRLV e ar-condicionado.' : 'Confirme categoria, ano de fabricação e configuração com a plataforma.'];
-    card.append(elemento('p', texto.filter(Boolean).join(' '), 'aviso'));
-  }
-  if (item.oferta?.link) {
-    const link = elemento('a', 'Abrir anúncio e conferir disponibilidade', 'acao');
-    Object.assign(link, { href: item.oferta.link, target: '_blank', rel: 'noopener noreferrer' });
-    card.append(link);
-  }
-  return card;
-}
-function mostrarResposta(resposta) {
-  const resumo = document.getElementById('resumo');
-  const contagem = resposta.total === 1 ? '1 modelo compatível.' : resposta.total + ' modelos compatíveis. Veja até três indicações.';
-  const mensagens = {
-    missao: 'Nenhuma versão passou pela triagem para o uso e a plataforma escolhidos.',
-    lotacao: 'As opções encontradas para esse uso têm lotação insuficiente ou a confirmar.',
-    orcamento: 'Nenhuma opção compatível com o perfil e a lotação cabe no limite informado.'
-  };
-  resumo.classList.toggle('ajuste', resposta.ajuste);
-  if (resposta.ajuste) {
-    const criterio = resposta.tipoAjuste === 'parcela' ? 'a parcela mensal, com a mesma entrada' : 'o orçamento total';
-    resumo.textContent = 'Nenhum veículo compatível coube no limite informado. Se você puder ajustar em até 10% '
-      + criterio + ', veja as opções próximas encontradas no estoque.';
-  } else resumo.textContent = mensagens[resposta.situacao] || contagem;
-  document.getElementById('ofertas').replaceChildren(...resposta.resultados.map(montarOferta));
-  saida.hidden = false;
-  document.getElementById('titulo-resultados').focus();
-}
-campo('missao').addEventListener('change', syncCondicionais);
-campo('temTroca').addEventListener('change', syncCondicionais);
-document.getElementById('editar').addEventListener('click', () => campo('missao').focus());
-form.addEventListener('submit', async evento => {
-  evento.preventDefault();
-  const dados = new FormData(form);
-  if (!String(dados.get('nome') || '').trim()) {
-    estado.textContent = 'Informe seu nome.';
-    campo('nome').focus();
-    return;
-  }
-  const prioridades = [1, 2, 3].map(i => dados.get('prioridade' + i));
-  if (new Set(prioridades).size !== 3) {
-    estado.textContent = 'Escolha três prioridades diferentes.';
-    campo('prioridade1').focus();
-    return;
-  }
-  const temTroca = dados.get('temTroca') === 'sim';
-  const perfil = {
-    cidade: dados.get('cidade'), missao: dados.get('missao'), pessoas: Number(dados.get('pessoas')),
-    contexto: dados.get('contexto'), prioridades, aplicativo: dados.get('aplicativo') || '',
-    motivacao: dados.get('motivacao'), carroceria: dados.get('carroceria'), cambio: dados.get('cambio'),
-    combustivel: dados.get('combustivel'), ano: Number(dados.get('ano')), aversoes: dados.getAll('aversoes'),
-    temTroca, troca: temTroca ? Number(dados.get('troca')) : 0,
-    entrada: Number(dados.get('entrada')), parcela: Number(dados.get('parcela'))
-  };
-  saida.hidden = true;
-  botao.disabled = true;
-  botao.textContent = 'Procurando no estoque…';
-  estado.textContent = 'Procurando no estoque…';
-  try {
-    const resposta = await consultar(perfil);
-    estado.textContent = '';
-    mostrarResposta(resposta);
-  } catch (erro) {
-    estado.textContent = erro.message || 'Não foi possível concluir a busca.';
-  } finally {
-    botao.disabled = false;
-    botao.textContent = 'Buscar meu Match';
-  }
-});
-iniciar();
-</script>
-</body>
-    </html>
-    
+    form.hidden =
