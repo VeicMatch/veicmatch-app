@@ -32,6 +32,9 @@ a{color:var(--brand)}:focus-visible{outline:3px solid #227c62;outline-offset:2px
 .subtitulo-troca {font-weight:750;margin:18px 0 8px}
 #campo-troca > .campo, #campo-troca > .grid {margin-bottom:12px}
 #estado-troca:empty {display:none}
+.galeria {margin:12px 0 16px}
+.fotos {display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;border-radius:10px}
+.fotos img {flex:0 0 100%;width:100%;aspect-ratio:4/3;object-fit:contain;background:var(--light);scroll-snap-align:start}
 </style>
 </head>
 <body>
@@ -255,6 +258,8 @@ const descricaoAversao = {
   Economia: 'Alto consumo', 'Manutenção': 'Manutenção mais cara', 'Espaço': 'Pouco espaço interno',
   Desempenho: 'Pouco desempenho', Revenda: 'Revenda mais difícil'
 };
+const criterioAversao = { Economia: 'Economia de combustível', 'Manutenção': 'Facilidade de manutenção',
+  'Espaço': 'Espaço interno', Desempenho: 'Desempenho', Revenda: 'Facilidade de revenda' };
 const campo = nome => form.elements.namedItem(nome);
 const grupoEntregas = 'Aplicativos de entregas';
 const tiposEntrega = new Map([
@@ -444,9 +449,41 @@ async function iniciar() {
 function acrescentar(lista, titulo, valor) {
   if (valor != null && valor !== '') lista.append(elemento('dt', titulo), elemento('dd', valor));
 }
+function montarGaleria(item) {
+  const lista = item.oferta?.fotos;
+  if (!Array.isArray(lista)) return null;
+  const urls = [...new Set(lista.filter(url => typeof url === 'string' && /^https:\/\/[^\s]+$/i.test(url)))].slice(0, 3);
+  if (!urls.length) return null;
+  const galeria = elemento('div', null, 'galeria');
+  const fotos = elemento('div', null, 'fotos');
+  fotos.setAttribute('role', 'region');
+  fotos.setAttribute('aria-label', 'Fotos do anúncio de ' + item.nome);
+  const dica = elemento('p', 'Deslize para ver mais fotos.', 'meta');
+  const atualizar = () => {
+    galeria.hidden = fotos.children.length === 0;
+    dica.hidden = fotos.children.length < 2;
+    fotos.tabIndex = fotos.children.length > 1 ? 0 : -1;
+  };
+  const imagens = urls.map((url, indice) => {
+    const foto = document.createElement('img');
+    foto.alt = item.nome + ' — foto ' + (indice + 1) + ' do anúncio';
+    foto.loading = 'lazy';
+    foto.decoding = 'async';
+    foto.referrerPolicy = 'no-referrer';
+    foto.addEventListener('error', () => { foto.remove(); atualizar(); }, { once: true });
+    return foto;
+  });
+  fotos.append(...imagens);
+  galeria.append(fotos, dica);
+  atualizar();
+  imagens.forEach((foto, indice) => { foto.src = urls[indice]; });
+  return galeria;
+}
 function montarOferta(item) {
   const card = elemento('article', null, 'card');
   card.append(elemento('h3', item.nome));
+  const galeria = montarGaleria(item);
+  if (galeria) card.append(galeria);
   const ano = Number.isFinite(item.ano) ? item.ano : 'Ano a confirmar';
   card.append(elemento('p', [item.versao, ano, item.carroceria, item.cambio || 'Câmbio a confirmar',
     item.combustivel || 'Combustível a confirmar', item.lugares + ' lugares'].filter(Boolean).join(' · '), 'meta'));
@@ -464,10 +501,16 @@ function montarOferta(item) {
     acrescentar(detalhes, 'Condição do preço', anuncio.condicao);
   }
   const mostrarNota = n => n == null ? 'a confirmar' : numero.format(n) + '/10';
-  acrescentar(detalhes, 'Afinidade', mostrarNota(item.afinidade));
+  acrescentar(detalhes, 'Compatibilidade com seu perfil', Number.isFinite(item.afinidade)
+    ? Math.round(item.afinidade * 10) + '%' : 'A confirmar');
   acrescentar(detalhes, 'Suas prioridades', item.prioridades.map(p => p.atributo + ' · ' + mostrarNota(p.nota)).join('\n'));
-  acrescentar(detalhes, 'O que você prefere evitar', item.aversoes.map(p => descricaoAversao[p.atributo] + ' · '
-    + (p.nota == null ? 'a confirmar' : (p.nota < p.referencia ? 'ponto de atenção' : 'atendido pela nota') + ' (' + mostrarNota(p.nota) + ')')).join('\n'));
+  acrescentar(detalhes, 'Como o carro atende ao que você quer evitar', item.aversoes.map(p => {
+    const criterio = p.atributo === 'Economia' && item.combustivel === 'Elétrico'
+      ? 'Eficiência energética' : (criterioAversao[p.atributo] || p.atributo);
+    if (p.nota == null) return criterio + ' · nota a confirmar';
+    const leitura = p.nota < p.referencia ? 'Ponto de atenção' : 'Atende à sua preferência';
+    return criterio + ' · ' + mostrarNota(p.nota) + ' · ' + leitura;
+  }).join('\n'));
   acrescentar(detalhes, 'Pontos positivos', item.positivos || 'A confirmar na ficha');
   acrescentar(detalhes, 'Pontos de atenção', item.atencao || 'A confirmar na ficha');
   acrescentar(detalhes, 'Consumo', item.consumo || 'A confirmar na ficha');
@@ -490,7 +533,7 @@ function montarOferta(item) {
 }
 function mostrarResposta(resposta, avaliacao) {
   const resumo = document.getElementById('resumo');
-  const contagem = resposta.total === 1 ? '1 modelo compatível.' : resposta.total + ' modelos compatíveis. Veja até três indicações.';
+  const indicacoes = resposta.resultados.slice(0, 3);
   const mensagens = {
     missao: 'Nenhuma versão passou pela triagem para o uso e a plataforma escolhidos.',
     lotacao: 'As opções encontradas para esse uso têm lotação insuficiente ou a confirmar.',
@@ -501,8 +544,9 @@ function mostrarResposta(resposta, avaliacao) {
     const criterio = resposta.tipoAjuste === 'parcela' ? 'a parcela mensal, com a mesma entrada' : 'o orçamento total';
     resumo.textContent = 'Nenhum veículo compatível coube no limite informado. Se você puder ajustar em até 10% '
       + criterio + ', veja as opções próximas encontradas no estoque.';
-  } else resumo.textContent = mensagens[resposta.situacao] || contagem;
-  document.getElementById('ofertas').replaceChildren(...resposta.resultados.map(montarOferta));
+  } else resumo.textContent = mensagens[resposta.situacao] || (indicacoes.length === 1
+    ? 'Esta é a opção mais adequada ao seu perfil.' : 'Estas são as opções mais adequadas ao seu perfil.');
+  document.getElementById('ofertas').replaceChildren(...indicacoes.map(montarOferta));
   const previa = document.getElementById('previa-troca');
   previa.replaceChildren();
   if (avaliacao) previa.append(montarPreAvaliacao(avaliacao));
