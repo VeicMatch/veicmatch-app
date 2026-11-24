@@ -191,8 +191,6 @@ async function iniciar() {
     }));
     syncCondicionais();
     estado.textContent = '';
-    form.hidden =
-Rodrigo, no GitHub, abre motor-2/index.html. Se a última linha está como form.hidden =, substitui essa linha inteira pelo bloco abaixo. Depois confere se o arquivo termina em </html> e salva em Commit changes na branch VeicMatch-patch-1.
     form.hidden = false;
   } catch (erro) {
     estado.textContent = erro.message || 'Não foi possível carregar o questionário.';
