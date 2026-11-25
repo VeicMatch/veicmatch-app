@@ -492,7 +492,10 @@ function montarGaleria(item) {
   imagens.forEach((foto, indice) => { foto.src = urls[indice]; });
   return galeria;
 }
-function montarOferta(item) {
+function normalizarCambio(valor) {
+  return String(valor || '').trim().normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+}
+function montarOferta(item, cambioPreferido) {
   const card = elemento('article', null, 'card');
   card.append(elemento('h3', item.nome));
   const galeria = montarGaleria(item);
@@ -500,6 +503,14 @@ function montarOferta(item) {
   const ano = Number.isFinite(item.ano) ? item.ano : 'Ano a confirmar';
   card.append(elemento('p', [item.versao, ano, item.carroceria, item.cambio || 'Câmbio a confirmar',
     item.combustivel || 'Combustível a confirmar', item.lugares + ' lugares'].filter(Boolean).join(' · '), 'meta'));
+  const cambioOferta = normalizarCambio(item.cambio);
+  if (cambioPreferido && cambioOferta !== normalizarCambio(cambioPreferido)) {
+    const informado = ['manual', 'automatico', 'automatizado'].includes(cambioOferta);
+    const aviso = informado
+      ? `Câmbio diferente do escolhido. Você preferiu câmbio ${cambioPreferido.toLowerCase()} e esta opção tem câmbio ${item.cambio.trim().toLowerCase()}.`
+      : `Câmbio a confirmar. Você preferiu câmbio ${cambioPreferido.toLowerCase()}.`;
+    card.append(elemento('p', aviso, 'aviso'));
+  }
   card.append(elemento('p', moeda.format(item.preco), 'preco'), elemento('p', item.origemPreco, 'meta'));
   card.append(elemento('p', item.preferencial ? 'Carroceria ou categoria preferencial para o uso selecionado.' : 'Compatível com o uso e a lotação informados.'));
   const detalhes = elemento('dl');
@@ -540,7 +551,7 @@ function montarOferta(item) {
   }
   return card;
 }
-function mostrarResposta(resposta, avaliacao) {
+function mostrarResposta(resposta, avaliacao, perfil) {
   const resumo = document.getElementById('resumo');
   const indicacoes = resposta.resultados.slice(0, 3);
   const mensagens = {
@@ -555,7 +566,7 @@ function mostrarResposta(resposta, avaliacao) {
       + criterio + ', veja as opções próximas encontradas no estoque.';
   } else resumo.textContent = mensagens[resposta.situacao] || (indicacoes.length === 1
     ? 'Esta é a opção mais adequada ao seu perfil.' : 'Estas são as opções mais adequadas ao seu perfil.');
-  document.getElementById('ofertas').replaceChildren(...indicacoes.map(montarOferta));
+  document.getElementById('ofertas').replaceChildren(...indicacoes.map(item => montarOferta(item, perfil.cambio)));
   const previa = document.getElementById('previa-troca');
   previa.replaceChildren();
   if (avaliacao) previa.append(montarPreAvaliacao(avaliacao));
@@ -614,7 +625,7 @@ form.addEventListener('submit', async evento => {
   try {
     const resposta = await consultar(perfil);
     estado.textContent = '';
-    mostrarResposta(resposta, avaliacao);
+    mostrarResposta(resposta, avaliacao, perfil);
   } catch (erro) {
     estado.textContent = erro.message || 'Não foi possível concluir a busca.';
   } finally {
