@@ -377,7 +377,7 @@
 
             <div class="field">
               <label for="atualKm">Quilometragem atual (km)</label>
-              <input type="number" id="atualKm" min="0" step="1000" placeholder="Ex.: 65000" required />
+              <input type="number" id="atualKm" min="0" step="1" placeholder="Ex.: 57543" required />
             </div>
           </div>
 
@@ -1036,6 +1036,7 @@
       const qs = new URLSearchParams(params).toString();
       const res = await fetch(`${APPS_SCRIPT_URL}?${qs}`);
       const json = await res.json();
+      if (!res.ok || json.ok === false) throw new Error("Não foi possível consultar o catálogo.");
       return json.dados || [];
     }
 
@@ -1080,8 +1081,50 @@
       const elModelo = document.getElementById(`${prefixo}Modelo`);
       const elAno = document.getElementById(prefixo === "atual" ? "atualAno" : "desejadoAnoMin");
       const elVersao = document.getElementById(`${prefixo}Versao`);
+      const versoesPorBusca = new Map();
+      let consultaVersoes = 0;
+
+      async function carregarVersoes() {
+        const consulta = ++consultaVersoes;
+        const marca = elMarca.value;
+        const modelo = elModelo.value;
+        const ano = elAno.value;
+        const placeholder = opcionalVersao ? "Qualquer versão" : "Selecione a versão exata";
+
+        preencherSelect(elVersao, [], "Carregando versões...");
+        try {
+          const anos = opcionalVersao && ano
+            ? Array.from(elAno.options, opcao => opcao.value).filter(valor => Number(valor) >= Number(ano))
+            : [ano];
+          const listas = await Promise.all(anos.map(anoModelo => {
+            const params = { action: "versoes", marca, modelo };
+            if (anoModelo) params.ano = anoModelo;
+            const chave = JSON.stringify(params);
+            if (!versoesPorBusca.has(chave)) {
+              const busca = consultarCatalogo(params).catch(erro => {
+                versoesPorBusca.delete(chave);
+                throw erro;
+              });
+              versoesPorBusca.set(chave, busca);
+            }
+            return versoesPorBusca.get(chave);
+          }));
+          if (consulta !== consultaVersoes) return;
+          const versoes = new Map();
+          for (const versao of listas.flat()) {
+            const valor = typeof versao === "object" ? (versao.valor ?? versao.versao) : versao;
+            if (!versoes.has(valor)) versoes.set(valor, versao);
+          }
+          const ordenadas = [...versoes].sort(([a], [b]) => a.localeCompare(b, "pt-BR"));
+          preencherSelect(elVersao, ordenadas.map(([, versao]) => versao), placeholder, opcionalVersao);
+        } catch (erro) {
+          if (consulta !== consultaVersoes) return;
+          preencherSelect(elVersao, [], "Falha ao carregar versões. Selecione o ano novamente.");
+        }
+      }
 
       elMarca.addEventListener("change", async () => {
+        consultaVersoes++;
         const marca = elMarca.value;
         preencherSelect(elModelo, [], "Carregando modelos...");
         preencherSelect(elAno, [], opcionalVersao ? "Qualquer ano" : "Selecione o modelo primeiro", opcionalVersao);
@@ -1094,6 +1137,7 @@
       });
 
       elModelo.addEventListener("change", async () => {
+        consultaVersoes++;
         const marca = elMarca.value;
         const modelo = elModelo.value;
         preencherSelect(elAno, [], "Carregando anos...");
@@ -1104,11 +1148,7 @@
         if (elMarca.value !== marca || elModelo.value !== modelo) return;
         preencherSelect(elAno, anos, opcionalVersao ? "Qualquer ano" : "Selecione o ano", opcionalVersao);
 
-        if (opcionalVersao) {
-          const versoes = await consultarCatalogo({ action: "versoes", marca, modelo });
-          if (elMarca.value !== marca || elModelo.value !== modelo || elAno.value) return;
-          preencherSelect(elVersao, versoes, "Qualquer versão", true);
-        }
+        if (opcionalVersao && !elAno.value) await carregarVersoes();
       });
 
       elAno.addEventListener("change", async () => {
@@ -1118,22 +1158,11 @@
 
         if (!marca || !modelo) return;
         if (!ano && !opcionalVersao) {
+          consultaVersoes++;
           preencherSelect(elVersao, [], "Selecione o ano primeiro");
           return;
         }
-
-        preencherSelect(elVersao, [], "Carregando versões...");
-        const params = { action: "versoes", marca, modelo };
-        if (ano) params.ano = ano;
-
-        const versoes = await consultarCatalogo(params);
-        if (elMarca.value !== marca || elModelo.value !== modelo || elAno.value !== ano) return;
-        preencherSelect(
-          elVersao,
-          versoes,
-          opcionalVersao ? "Qualquer versão" : "Selecione a versão exata",
-          opcionalVersao
-        );
+        await carregarVersoes();
       });
     }
 
