@@ -472,13 +472,13 @@
 
             <div class="field" id="campoSaldoDevedor" style="display: none;">
               <label for="saldoDevedor">Quanto falta para quitar hoje? (R$)</label>
-              <input type="number" id="saldoDevedor" min="0" step="100" value="0" placeholder="Ex.: 18500" />
+              <input type="number" id="saldoDevedor" min="0" step="0.01" value="0" placeholder="Ex.: 18500" />
             </div>
           </div>
 
           <div class="field">
             <label for="valorDebitosDoc">IPVA, licenciamento e multas pendentes (R$)</label>
-            <input type="number" id="valorDebitosDoc" min="0" step="50" value="0" placeholder="0 se tudo estiver pago" />
+            <input type="number" id="valorDebitosDoc" min="0" step="0.01" value="0" placeholder="0 se tudo estiver pago" />
             <div class="helper">Some IPVA em aberto/parcelas, licenciamento e multas caso existam.</div>
           </div>
         </fieldset>
@@ -491,13 +491,13 @@
         <div class="grid-2">
           <div class="field">
             <label for="entradaExtra">Entrada em dinheiro (R$)</label>
-            <input type="number" id="entradaExtra" min="0" step="500" value="0" placeholder="Ex.: 10000" />
+            <input type="number" id="entradaExtra" min="0" step="0.01" value="0" placeholder="Ex.: 10000" />
             <div class="helper">Informe 0 se não houver entrada em dinheiro.</div>
           </div>
 
           <div class="field">
             <label for="parcelaMax">Valor máximo da parcela (R$/mês)</label>
-            <input type="number" id="parcelaMax" min="0" step="50" value="0" placeholder="Ex.: 1300" />
+            <input type="number" id="parcelaMax" min="0" step="0.01" value="0" placeholder="Ex.: 1300" />
             <div class="helper">Verificamos automaticamente qual prazo atende sua parcela.</div>
           </div>
         </div>
@@ -1315,11 +1315,11 @@
         const valor = document.createElement("p");
 
         if (Number.isFinite(valorBruto) && valorBruto > 0) {
-          const maximo = Math.round(Math.max(0, valorBruto * 1.05 - totalDebitos) / 100) * 100;
           const minimo = Math.round(Math.max(0, valorBruto * 0.90 - totalDebitos) / 100) * 100;
+          const maximo = Math.round(Math.max(0, valorBruto * 1.05 - totalDebitos) / 100) * 100;
           const moeda = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
           valor.className = "faixa-troca";
-          valor.textContent = maximo === minimo ? moeda.format(maximo) : `${moeda.format(maximo)} a ${moeda.format(minimo)}`;
+          valor.textContent = minimo === maximo ? moeda.format(minimo) : `${moeda.format(minimo)} a ${moeda.format(maximo)}`;
           cartao.append(valor);
           if (totalDebitos > 0) {
             const legenda = document.createElement("p");
