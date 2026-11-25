@@ -87,7 +87,7 @@ a{color:var(--brand)}:focus-visible{outline:3px solid var(--brand);outline-offse
         <label class="campo">Carroceria preferida<select name="carroceria"></select></label>
         <label class="campo">Câmbio<select name="cambio"></select></label>
         <label class="campo">Combustível<select name="combustivel"></select></label>
-        <label class="campo">Ano-modelo de preferência<input name="ano" type="number" min="1980" max="2100" step="1"></label>
+        <label class="campo">Ano-modelo de preferência (a partir de)<input name="ano" type="number" min="1980" max="2100" step="1"></label>
       </div>
     </details>
     <fieldset>
@@ -492,10 +492,10 @@ function montarGaleria(item) {
   imagens.forEach((foto, indice) => { foto.src = urls[indice]; });
   return galeria;
 }
-function normalizarCambio(valor) {
+function normalizarPreferencia(valor) {
   return String(valor || '').trim().normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
 }
-function montarOferta(item, cambioPreferido) {
+function montarOferta(item, perfil) {
   const card = elemento('article', null, 'card');
   card.append(elemento('h3', item.nome));
   const galeria = montarGaleria(item);
@@ -503,12 +503,26 @@ function montarOferta(item, cambioPreferido) {
   const ano = Number.isFinite(item.ano) ? item.ano : 'Ano a confirmar';
   card.append(elemento('p', [item.versao, ano, item.carroceria, item.cambio || 'Câmbio a confirmar',
     item.combustivel || 'Combustível a confirmar', item.lugares + ' lugares'].filter(Boolean).join(' · '), 'meta'));
-  const cambioOferta = normalizarCambio(item.cambio);
-  if (cambioPreferido && cambioOferta !== normalizarCambio(cambioPreferido)) {
+  const cambioPreferido = perfil.cambio;
+  const cambioOferta = normalizarPreferencia(item.cambio);
+  if (cambioPreferido && cambioOferta !== normalizarPreferencia(cambioPreferido)) {
     const informado = ['manual', 'automatico', 'automatizado'].includes(cambioOferta);
     const aviso = informado
       ? `Câmbio diferente do escolhido. Você preferiu câmbio ${cambioPreferido.toLowerCase()} e esta opção tem câmbio ${item.cambio.trim().toLowerCase()}.`
       : `Câmbio a confirmar. Você preferiu câmbio ${cambioPreferido.toLowerCase()}.`;
+    card.append(elemento('p', aviso, 'aviso'));
+  }
+  const combustivel = normalizarPreferencia(item.combustivel);
+  if (perfil.combustivel && combustivel !== normalizarPreferencia(perfil.combustivel)) {
+    const aviso = combustivel && combustivel !== 'a confirmar' && combustivel !== 'nao informado'
+      ? `Combustível diferente do escolhido. Você preferiu ${perfil.combustivel.toLowerCase()} e esta opção é ${item.combustivel.trim().toLowerCase()}.`
+      : `Combustível a confirmar. Você preferiu ${perfil.combustivel.toLowerCase()}.`;
+    card.append(elemento('p', aviso, 'aviso'));
+  }
+  if (perfil.ano > 0 && (!Number.isFinite(item.ano) || item.ano < perfil.ano)) {
+    const aviso = Number.isFinite(item.ano)
+      ? `Ano-modelo abaixo do escolhido. Você preferiu a partir de ${perfil.ano} e esta opção é ${item.ano}.`
+      : `Ano-modelo a confirmar. Você preferiu a partir de ${perfil.ano}.`;
     card.append(elemento('p', aviso, 'aviso'));
   }
   card.append(elemento('p', moeda.format(item.preco), 'preco'), elemento('p', item.origemPreco, 'meta'));
@@ -566,7 +580,7 @@ function mostrarResposta(resposta, avaliacao, perfil) {
       + criterio + ', veja as opções próximas encontradas no estoque.';
   } else resumo.textContent = mensagens[resposta.situacao] || (indicacoes.length === 1
     ? 'Esta é a opção mais adequada ao seu perfil.' : 'Estas são as opções mais adequadas ao seu perfil.');
-  document.getElementById('ofertas').replaceChildren(...indicacoes.map(item => montarOferta(item, perfil.cambio)));
+  document.getElementById('ofertas').replaceChildren(...indicacoes.map(item => montarOferta(item, perfil)));
   const previa = document.getElementById('previa-troca');
   previa.replaceChildren();
   if (avaliacao) previa.append(montarPreAvaliacao(avaliacao));
