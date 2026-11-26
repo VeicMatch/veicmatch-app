@@ -39,8 +39,7 @@ a{color:var(--brand)}:focus-visible{outline:3px solid var(--brand);outline-offse
 .subtitulo-troca {font-weight:750;margin:18px 0 8px}
 #campo-troca > .campo, #campo-troca > .grid {margin-bottom:12px}
 #estado-troca:empty {display:none}
-.oferta-match .cta-oferta{display:inline-flex;align-items:center;min-height:44px;padding:8px 14px;border-radius:8px;background:var(--brand);color:#fff;font-weight:740;text-decoration:none}
-.oferta-match .cta-oferta:hover{background:var(--brand-hover)}
+.oferta-match .link-anuncio{display:inline-flex;align-items:center;min-height:44px;font-weight:650}
 .oferta-match .analise-oferta{margin:12px 0 0;border-top:1px solid var(--line);padding-top:4px}
 .oferta-match summary{min-height:44px;padding:10px 0}
 .oferta-match .destaque-oferta{margin:10px 0}
@@ -500,7 +499,7 @@ function montarLinkAnuncio(link) {
   try {
     const url = new URL(link);
     if (!['https:', 'http:'].includes(url.protocol) || url.username || url.password) return null;
-    const ancora = elemento('a', 'Abrir anúncio e conferir disponibilidade', 'cta-oferta');
+    const ancora = elemento('a', 'Ver anúncio original no site da loja ↗', 'link-anuncio');
     Object.assign(ancora, { href: url.href, target: '_blank', rel: 'noopener noreferrer' });
     return ancora;
   } catch {
@@ -511,7 +510,7 @@ function menorPlano(item) {
   return (item.planos || []).reduce((menor, plano) => !menor || plano.valor < menor.valor ? plano : menor, null);
 }
 function mostrarNota(nota) {
-  return Number.isFinite(nota) ? numero.format(nota) + '/10' : 'a confirmar';
+  return numero.format(nota) + '/10';
 }
 function montarComparacao(indicacoes, perfil) {
   const secao = elemento('section', null, 'card');
@@ -532,7 +531,8 @@ function montarComparacao(indicacoes, perfil) {
     else if (item.cobertoPelaEntrada) coluna.append(elemento('p', 'Coberto pela entrada', 'meta'));
     coluna.append(elemento('p', item.oferta?.municipio || (item.oferta ? 'Município a confirmar' : 'Sem anúncio nesta busca'), 'meta'));
     for (const criterio of criterios) {
-      coluna.append(elemento('p', criterio + ' · ' + mostrarNota(notasPorCarro[indice].get(criterio))));
+      const nota = notasPorCarro[indice].get(criterio);
+      if (Number.isFinite(nota)) coluna.append(elemento('p', criterio + ' · ' + mostrarNota(nota)));
     }
     grade.append(coluna);
   });
@@ -592,7 +592,7 @@ function montarOferta(item, perfil, ajuste) {
     }
   } else if (item.cobertoPelaEntrada) card.append(elemento('p', 'Valor coberto pela entrada informada.', 'destaque-oferta'));
   else if (item.adicional > 0) card.append(elemento('p', 'Valor adicional necessário · ' + moeda.format(item.adicional), 'destaque-oferta'));
-  const prioridades = item.prioridades || [];
+  const prioridades = (item.prioridades || []).filter(p => Number.isFinite(p.nota));
   const alertas = pontosEvitados(item);
   if (alertas.length) card.append(elemento('p', 'Você pediu para evitar · '
     + alertas.map(p => descricaoAversao[p.atributo] || p.atributo).join(' · '), 'destaque-oferta oferta-alerta'));
@@ -606,9 +606,7 @@ function montarOferta(item, perfil, ajuste) {
     card.append(destaques);
   }
   const link = montarLinkAnuncio(anuncio?.link);
-  if (link) card.append(link, elemento('p', 'Confirme o preço e a disponibilidade com a loja.', 'meta'));
-  else if (!anuncio) card.append(elemento('p', 'Sem anúncio nesta busca. O valor é uma referência da FIPE.', 'meta'));
-  else card.append(elemento('p', 'O link da loja está indisponível para esta oferta.', 'meta'));
+  if (!anuncio) card.append(elemento('p', 'Sem anúncio nesta busca. O valor é uma referência da FIPE.', 'meta'));
   const analise = elemento('details', null, 'analise-oferta');
   analise.append(elemento('summary', 'Ver análise completa'));
   const detalhes = elemento('dl');
@@ -620,8 +618,8 @@ function montarOferta(item, perfil, ajuste) {
   if (planos.length) {
     acrescentar(detalhes, 'Saldo estimado a financiar', moeda.format(financiamento?.saldo
       ?? Math.max(0, item.preco - troca - entrada)));
-    acrescentar(detalhes, 'Parcelas estimadas', planos.map(p => linhaParcela(p)
-      + (Number.isFinite(p.taxa) ? ' · ' + p.taxa.toLocaleString('pt-BR', { style: 'percent', maximumFractionDigits: 4 }) + ' ao mês' : '')).join('\n'));
+    acrescentar(detalhes, 'Parcelas estimadas', planos.map(linhaParcela).join('\n') +
+      '\n\nOs valores são estimativas para o limite mensal usado na busca. As condições finais dependem da análise de crédito da instituição financeira, que pode considerar seu CPF e seu score.');
   }
   if (anuncio) {
     if (Number.isFinite(anuncio.distancia)) acrescentar(detalhes, 'Distância aproximada', numero.format(anuncio.distancia) + ' km em linha reta');
@@ -632,20 +630,21 @@ function montarOferta(item, perfil, ajuste) {
     }
   }
   acrescentar(detalhes, 'Afinidade com seu perfil', Number.isFinite(item.afinidade)
-    ? item.afinidade.toLocaleString('pt-BR', { maximumFractionDigits: 2 }) + '/10' : 'A confirmar');
+    ? item.afinidade.toLocaleString('pt-BR', { maximumFractionDigits: 2 }) + '/10' : '');
   acrescentar(detalhes, 'Suas prioridades', prioridades.map(p => p.atributo + ' · ' + mostrarNota(p.nota)).join('\n'));
-  acrescentar(detalhes, 'Como o carro atende ao que você quer evitar', (item.aversoes || []).map(p => {
+  const aversoesAvaliadas = (item.aversoes || []).filter(p => Number.isFinite(p.nota) && Number.isFinite(p.referencia));
+  acrescentar(detalhes, 'Como o carro atende ao que você quer evitar', aversoesAvaliadas.map(p => {
     const criterio = p.atributo === 'Economia' && item.combustivel === 'Elétrico'
       ? 'Eficiência energética' : (criterioAversao[p.atributo] || p.atributo);
-    if (!Number.isFinite(p.nota) || !Number.isFinite(p.referencia)) return criterio + ' · avaliação a confirmar';
     const leitura = p.nota < p.referencia ? 'Ponto de atenção' : 'Atende à sua preferência';
     return criterio + ' · ' + mostrarNota(p.nota) + ' · ' + leitura;
   }).join('\n'));
-  acrescentar(detalhes, 'Pontos positivos', item.positivos || 'A confirmar na ficha');
-  acrescentar(detalhes, 'Pontos de atenção', textoAtencao || 'A confirmar na ficha');
-  acrescentar(detalhes, 'Consumo', String(item.consumo || 'A confirmar na ficha').replace(/\bkm\/le\b/gi, 'km por litro equivalente'));
+  acrescentar(detalhes, 'Pontos positivos', item.positivos);
+  acrescentar(detalhes, 'Pontos de atenção', textoAtencao);
+  acrescentar(detalhes, 'Consumo', String(item.consumo || '').replace(/\bkm\/le\b/gi, 'km por litro equivalente'));
   acrescentar(detalhes, 'Porta-malas', Number(item.portaMalas) > 0 ? item.portaMalas + ' L' : '');
   analise.append(detalhes);
+  if (link) analise.append(link, elemento('p', 'Confirme o preço e a disponibilidade com a loja.', 'meta'));
   if (item.aplicativo) {
     const { plataformas, validarPicape, regra, validarLoggi, passageiros } = item.aplicativo;
     const texto = ['Pré-seleção para ' + plataformas.join(' · ') + '.', regra ? 'Condição da lista: ' + regra + '.' : '',
