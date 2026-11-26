@@ -39,6 +39,13 @@ a{color:var(--brand)}:focus-visible{outline:3px solid var(--brand);outline-offse
 .subtitulo-troca {font-weight:750;margin:18px 0 8px}
 #campo-troca > .campo, #campo-troca > .grid {margin-bottom:12px}
 #estado-troca:empty {display:none}
+.oferta-match .cta-oferta{display:inline-flex;align-items:center;min-height:44px;padding:8px 14px;border-radius:8px;background:var(--brand);color:#fff;font-weight:740;text-decoration:none}
+.oferta-match .cta-oferta:hover{background:var(--brand-hover)}
+.oferta-match .analise-oferta{margin:12px 0 0;border-top:1px solid var(--line);padding-top:4px}
+.oferta-match summary{min-height:44px;padding:10px 0}
+.oferta-match .destaque-oferta{margin:10px 0}
+.oferta-match .oferta-alerta{color:#854d0e}
+.oferta-match .match-fotos-miniatura{max-height:170px}
 
 </style>
 <link rel="stylesheet" href="/fotos-match.css">
@@ -464,8 +471,27 @@ function acrescentar(lista, titulo, valor) {
 function normalizarPreferencia(valor) {
   return String(valor || '').trim().normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
 }
-function montarOferta(item, perfil) {
-  const card = elemento('article', null, 'card');
+function pontosEvitados(item) {
+  return (item.aversoes || []).filter(p => Number.isFinite(p.nota)
+    && Number.isFinite(p.referencia) && p.nota < p.referencia);
+}
+function primeiroDestaque(texto) {
+  return String(texto || '').trim().split(/\r?\n|(?<=[.!?])\s+(?=[A-ZÁÉÍÓÚÂÊÔÃÕÇ])/u)[0];
+}
+function montarLinkAnuncio(link) {
+  if (!link) return null;
+  try {
+    const url = new URL(link);
+    if (!['https:', 'http:'].includes(url.protocol) || url.username || url.password) return null;
+    const ancora = elemento('a', 'Abrir anúncio e conferir disponibilidade', 'cta-oferta');
+    Object.assign(ancora, { href: url.href, target: '_blank', rel: 'noopener noreferrer' });
+    return ancora;
+  } catch {
+    return null;
+  }
+}
+function montarOferta(item, perfil, ajuste) {
+  const card = elemento('article', null, 'card oferta-match');
   card.append(elemento('h3', item.nome));
   const galeria = window.criarGaleriaMatch?.(item.oferta?.fotos, item.nome);
   if (galeria) card.append(galeria);
@@ -495,35 +521,87 @@ function montarOferta(item, perfil) {
     card.append(elemento('p', aviso, 'aviso'));
   }
   card.append(elemento('p', moeda.format(item.preco), 'preco'), elemento('p', item.origemPreco, 'meta'));
-  card.append(elemento('p', item.preferencial ? 'Carroceria ou categoria preferencial para o uso selecionado.' : 'Compatível com o uso e a lotação informados.'));
-  const detalhes = elemento('dl');
-  if (item.adicional != null && item.adicional > 0) acrescentar(detalhes, 'Valor adicional necessário', moeda.format(item.adicional));
-  if (item.cobertoPelaEntrada) acrescentar(detalhes, 'Pagamento', 'Coberto pela entrada informada');
-  else if (item.planos.length) acrescentar(detalhes, 'Parcelas estimadas', item.planos.map(p => p.meses + '× de ' + moeda.format(p.valor)).join('\n'));
-  if (item.oferta) {
-    const anuncio = item.oferta;
-    const distancia = anuncio.distancia == null ? '' : numero.format(anuncio.distancia) + ' km em linha reta' + (anuncio.outraRegiao ? ' · Outra região' : '');
-    acrescentar(detalhes, 'Loja', [anuncio.loja, anuncio.municipio, distancia].filter(Boolean).join(' · '));
-    acrescentar(detalhes, 'Quilometragem', anuncio.km == null ? 'A confirmar' : numero.format(anuncio.km) + ' km');
-    const condicao = anuncio.condicao?.replace(/confirmar condições no anúncio/gi, 'condições a confirmar');
-    acrescentar(detalhes, 'Condição do preço', condicao);
+  const planos = [...(item.planos || [])].sort((a, b) => a.meses - b.meses);
+  const anuncio = item.oferta;
+  if (anuncio) {
+    const local = [anuncio.loja, anuncio.municipio, anuncio.outraRegiao ? 'Outra região' : ''].filter(Boolean).join(' · ');
+    if (local) card.append(elemento('p', local, 'meta'));
   }
-  const mostrarNota = n => n == null ? 'a confirmar' : numero.format(n) + '/10';
-  acrescentar(detalhes, 'Compatibilidade com seu perfil', Number.isFinite(item.afinidade)
-    ? Math.round(item.afinidade * 10) + '%' : 'A confirmar');
-  acrescentar(detalhes, 'Suas prioridades', item.prioridades.map(p => p.atributo + ' · ' + mostrarNota(p.nota)).join('\n'));
-  acrescentar(detalhes, 'Como o carro atende ao que você quer evitar', item.aversoes.map(p => {
+  const linhaParcela = p => p.meses + '× de ' + moeda.format(p.valor);
+  const menorParcela = planos.reduce((menor, p) => !menor || p.valor < menor.valor ? p : menor, null);
+  const financiamento = item.financiamento;
+  if (menorParcela) {
+    card.append(elemento('p', (planos.length > 1 ? 'Menor parcela estimada · ' : 'Parcela estimada · ')
+      + linhaParcela(menorParcela), 'destaque-oferta'));
+    if (financiamento?.prazosOmitidos !== 0) {
+      const teto = financiamento?.tetoParcela ?? (ajuste ? null : perfil.parcela);
+      const limite = Number.isFinite(teto) ? ' de ' + moeda.format(teto) + ' por mês' : ' da busca ajustada';
+      const mensagem = planos.length === 1 && financiamento?.prazosOmitidos > 0
+        ? 'É o único prazo dentro do limite' + limite + '.'
+        : 'Os prazos que ultrapassam o limite' + limite + ' ficam fora da lista.';
+      card.append(elemento('p', mensagem, 'meta'));
+    }
+  } else if (item.cobertoPelaEntrada) card.append(elemento('p', 'Valor coberto pela entrada informada.', 'destaque-oferta'));
+  else if (item.adicional > 0) card.append(elemento('p', 'Valor adicional necessário · ' + moeda.format(item.adicional), 'destaque-oferta'));
+  const mostrarNota = n => Number.isFinite(n) ? numero.format(n) + '/10' : 'a confirmar';
+  const prioridades = item.prioridades || [];
+  const melhorPrioridade = prioridades.filter(p => Number.isFinite(p.nota))
+    .reduce((melhor, p) => !melhor || p.nota > melhor.nota ? p : melhor, null);
+  if (melhorPrioridade) card.append(elemento('p', 'Destaque nas suas prioridades · ' + melhorPrioridade.atributo
+    + ' · ' + mostrarNota(melhorPrioridade.nota), 'destaque-oferta'));
+  const alertas = pontosEvitados(item);
+  if (alertas.length) card.append(elemento('p', 'Você pediu para evitar · '
+    + alertas.map(p => descricaoAversao[p.atributo] || p.atributo).join(' · '), 'destaque-oferta oferta-alerta'));
+  const positivos = primeiroDestaque(item.positivos);
+  const textoAtencao = String(item.atencao || '').replace(/\bPara viagens,/gi, 'Para deslocamentos mais longos,');
+  const atencao = primeiroDestaque(textoAtencao);
+  if (positivos || atencao) {
+    const destaques = elemento('dl', null, 'destaque-oferta');
+    acrescentar(destaques, 'Ponto positivo', positivos);
+    acrescentar(destaques, 'Ponto de atenção', atencao);
+    card.append(destaques);
+  }
+  const link = montarLinkAnuncio(anuncio?.link);
+  if (link) card.append(link);
+  else if (!anuncio) card.append(elemento('p', 'Sem anúncio nesta indicação.', 'meta'));
+  else card.append(elemento('p', 'Link do anúncio indisponível.', 'meta'));
+  const analise = elemento('details', null, 'analise-oferta');
+  analise.append(elemento('summary', 'Ver análise completa'));
+  const detalhes = elemento('dl');
+  const troca = financiamento?.troca ?? perfil.troca;
+  const entrada = financiamento?.entrada ?? perfil.entrada;
+  if (perfil.temTroca) acrescentar(detalhes, 'Valor líquido estimado da troca', moeda.format(troca));
+  acrescentar(detalhes, 'Entrada em dinheiro', moeda.format(entrada));
+  acrescentar(detalhes, 'Entrada total', moeda.format(troca + entrada));
+  if (planos.length) {
+    acrescentar(detalhes, 'Saldo estimado a financiar', moeda.format(financiamento?.saldo
+      ?? Math.max(0, item.preco - troca - entrada)));
+    acrescentar(detalhes, 'Parcelas estimadas', planos.map(p => linhaParcela(p)
+      + (Number.isFinite(p.taxa) ? ' · ' + p.taxa.toLocaleString('pt-BR', { style: 'percent', maximumFractionDigits: 4 }) + ' ao mês' : '')).join('\n'));
+  }
+  if (anuncio) {
+    if (Number.isFinite(anuncio.distancia)) acrescentar(detalhes, 'Distância aproximada', numero.format(anuncio.distancia) + ' km em linha reta');
+    acrescentar(detalhes, 'Quilometragem', anuncio.km == null ? 'A confirmar' : numero.format(anuncio.km) + ' km');
+    const condicao = normalizarPreferencia(anuncio.condicao);
+    if (condicao && !/^(condicoes? )?(nao identificad[ao]s?|nao informad[ao]s?|a confirmar|confirmar condicoes no anuncio)\.?$/.test(condicao)) {
+      acrescentar(detalhes, 'Condição do preço', anuncio.condicao.replace(/confirmar condições no anúncio/gi, 'consulte as condições no anúncio'));
+    }
+  }
+  acrescentar(detalhes, 'Afinidade com seu perfil', Number.isFinite(item.afinidade)
+    ? item.afinidade.toLocaleString('pt-BR', { maximumFractionDigits: 2 }) + '/10' : 'A confirmar');
+  acrescentar(detalhes, 'Suas prioridades', prioridades.map(p => p.atributo + ' · ' + mostrarNota(p.nota)).join('\n'));
+  acrescentar(detalhes, 'Como o carro atende ao que você quer evitar', (item.aversoes || []).map(p => {
     const criterio = p.atributo === 'Economia' && item.combustivel === 'Elétrico'
       ? 'Eficiência energética' : (criterioAversao[p.atributo] || p.atributo);
-    if (p.nota == null) return criterio + ' · nota a confirmar';
+    if (!Number.isFinite(p.nota) || !Number.isFinite(p.referencia)) return criterio + ' · avaliação a confirmar';
     const leitura = p.nota < p.referencia ? 'Ponto de atenção' : 'Atende à sua preferência';
     return criterio + ' · ' + mostrarNota(p.nota) + ' · ' + leitura;
   }).join('\n'));
   acrescentar(detalhes, 'Pontos positivos', item.positivos || 'A confirmar na ficha');
-  acrescentar(detalhes, 'Pontos de atenção', item.atencao || 'A confirmar na ficha');
-  acrescentar(detalhes, 'Consumo', item.consumo || 'A confirmar na ficha');
+  acrescentar(detalhes, 'Pontos de atenção', textoAtencao || 'A confirmar na ficha');
+  acrescentar(detalhes, 'Consumo', String(item.consumo || 'A confirmar na ficha').replace(/\bkm\/le\b/gi, 'km por litro equivalente'));
   acrescentar(detalhes, 'Porta-malas', Number(item.portaMalas) > 0 ? item.portaMalas + ' L' : '');
-  card.append(detalhes);
+  analise.append(detalhes);
   if (item.aplicativo) {
     const { plataformas, validarPicape, regra, validarLoggi, passageiros } = item.aplicativo;
     const texto = ['Pré-seleção para ' + plataformas.join(' · ') + '.', regra ? 'Condição da lista: ' + regra + '.' : '',
@@ -532,11 +610,13 @@ function montarOferta(item, perfil) {
       passageiros ? 'Confirme cidade, categoria, ano de fabricação, quatro portas, lotação no CRLV e ar-condicionado.' : 'Confirme categoria, ano de fabricação e configuração com a plataforma.'];
     card.append(elemento('p', texto.filter(Boolean).join(' '), 'aviso'));
   }
+  card.append(analise);
   return card;
 }
 function mostrarResposta(resposta, avaliacao, perfil) {
   const resumo = document.getElementById('resumo');
   const indicacoes = resposta.resultados.slice(0, 3);
+  if (!resposta.ordenadoPorAversoes) indicacoes.sort((a, b) => pontosEvitados(a).length - pontosEvitados(b).length);
   const mensagens = {
     missao: 'Nenhuma versão passou pela triagem para o uso e a plataforma escolhidos.',
     lotacao: 'As opções encontradas para esse uso têm lotação insuficiente ou a confirmar.',
@@ -545,11 +625,15 @@ function mostrarResposta(resposta, avaliacao, perfil) {
   resumo.classList.toggle('ajuste', resposta.ajuste);
   if (resposta.ajuste) {
     const criterio = resposta.tipoAjuste === 'parcela' ? 'a parcela mensal, com a mesma entrada' : 'o orçamento total';
-    resumo.textContent = 'Nenhum veículo compatível coube no limite informado. Se você puder ajustar em até 10% '
+    const percentual = Number.isFinite(resposta.toleranciaPercentual) ? ' em até ' + resposta.toleranciaPercentual + '%' : '';
+    resumo.textContent = 'Nenhum veículo compatível coube no limite informado. Se você puder ajustar' + percentual + ' '
       + criterio + ', veja as opções próximas encontradas no estoque.';
   } else resumo.textContent = mensagens[resposta.situacao] || (indicacoes.length === 1
-    ? 'Esta é a opção mais adequada ao seu perfil.' : 'Estas são as opções mais adequadas ao seu perfil.');
-  document.getElementById('ofertas').replaceChildren(...indicacoes.map(item => montarOferta(item, perfil)));
+    ? 'Encontramos uma indicação para o seu perfil.' : 'Selecionamos até três indicações com base no seu uso, nas suas prioridades e no seu orçamento.');
+  if (indicacoes.length > 1 && perfil.aversoes.length) {
+    resumo.textContent += ' Na lista, aparecem primeiro os carros com menos pontos de atenção no que você pediu para evitar.';
+  }
+  document.getElementById('ofertas').replaceChildren(...indicacoes.map(item => montarOferta(item, perfil, resposta.ajuste)));
   const previa = document.getElementById('previa-troca');
   previa.replaceChildren();
   if (avaliacao) previa.append(montarPreAvaliacao(avaliacao));
