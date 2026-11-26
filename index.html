@@ -277,6 +277,7 @@
 
     .btn-ajustar-busca[hidden] { display: none; }
   </style>
+  <link rel="stylesheet" href="/fotos-match.css">
 </head>
 <body>
   <div class="container">
@@ -526,6 +527,7 @@
     </div>
   </div>
 
+  <script src="/fotos-match.js"></script>
   <script>
     // Coordenadas das sedes municipais do RS — IBGE, serviço cartográfico do Estado do RS.
     // https://zee.rs.gov.br/server/rest/services/1_RSAGUAS/Mapa_basico_SIGRSAGUA/FeatureServer/1
@@ -1483,7 +1485,10 @@
       preco.textContent = Number(carro.preco) > 0 ? formatarMoeda(carro.preco) : "Preço a confirmar";
       const loja = carro.loja ? ` da loja ${carro.loja}` : "";
       const mensagem = `Olá! Vi o ${nome}${loja} no VeícMatch. Ele ainda está disponível?${textoTroca} Gostaria de conversar sobre as condições de compra.`;
-      item.append(titulo, meta, preco, criarLinkWhatsApp("Consultar disponibilidade", mensagem));
+      item.append(titulo);
+      const galeria = window.criarGaleriaMatch?.(carro.fotos, nome);
+      if (galeria) item.append(galeria);
+      item.append(meta, preco, criarLinkWhatsApp("Consultar disponibilidade", mensagem));
       return item;
     }
 
