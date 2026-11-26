@@ -39,11 +39,9 @@ a{color:var(--brand)}:focus-visible{outline:3px solid var(--brand);outline-offse
 .subtitulo-troca {font-weight:750;margin:18px 0 8px}
 #campo-troca > .campo, #campo-troca > .grid {margin-bottom:12px}
 #estado-troca:empty {display:none}
-.galeria {margin:12px 0 16px}
-.fotos {display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;border-radius:10px}
-.fotos img {flex:0 0 100%;width:100%;aspect-ratio:4/3;object-fit:contain;background:var(--light);scroll-snap-align:start}
 
 </style>
+<link rel="stylesheet" href="/fotos-match.css">
 </head>
 <body>
 <header>
@@ -257,6 +255,7 @@ a{color:var(--brand)}:focus-visible{outline:3px solid var(--brand);outline-offse
   <button class="secundario" type="button" id="editar">Rever minhas respostas</button>
 </section>
 </main>
+<script src="/fotos-match.js"></script>
 <script>
 'use strict';
 const api = document.querySelector('meta[name="veicmatch-motor-2-api"]').content.trim();
@@ -462,43 +461,13 @@ async function iniciar() {
 function acrescentar(lista, titulo, valor) {
   if (valor != null && valor !== '') lista.append(elemento('dt', titulo), elemento('dd', valor));
 }
-function montarGaleria(item) {
-  const lista = item.oferta?.fotos;
-  if (!Array.isArray(lista)) return null;
-  const urls = [...new Set(lista.filter(url => typeof url === 'string' && /^https:\/\/[^\s]+$/i.test(url)))].slice(0, 3);
-  if (!urls.length) return null;
-  const galeria = elemento('div', null, 'galeria');
-  const fotos = elemento('div', null, 'fotos');
-  fotos.setAttribute('role', 'region');
-  fotos.setAttribute('aria-label', 'Fotos do anúncio de ' + item.nome);
-  const dica = elemento('p', 'Deslize para ver mais fotos.', 'meta');
-  const atualizar = () => {
-    galeria.hidden = fotos.children.length === 0;
-    dica.hidden = fotos.children.length < 2;
-    fotos.tabIndex = fotos.children.length > 1 ? 0 : -1;
-  };
-  const imagens = urls.map((url, indice) => {
-    const foto = document.createElement('img');
-    foto.alt = item.nome + ' — foto ' + (indice + 1) + ' do anúncio';
-    foto.loading = 'lazy';
-    foto.decoding = 'async';
-    foto.referrerPolicy = 'no-referrer';
-    foto.addEventListener('error', () => { foto.remove(); atualizar(); }, { once: true });
-    return foto;
-  });
-  fotos.append(...imagens);
-  galeria.append(fotos, dica);
-  atualizar();
-  imagens.forEach((foto, indice) => { foto.src = urls[indice]; });
-  return galeria;
-}
 function normalizarPreferencia(valor) {
   return String(valor || '').trim().normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
 }
 function montarOferta(item, perfil) {
   const card = elemento('article', null, 'card');
   card.append(elemento('h3', item.nome));
-  const galeria = montarGaleria(item);
+  const galeria = window.criarGaleriaMatch?.(item.oferta?.fotos, item.nome);
   if (galeria) card.append(galeria);
   const ano = Number.isFinite(item.ano) ? item.ano : 'Ano a confirmar';
   card.append(elemento('p', [item.versao, ano, item.carroceria, item.cambio || 'Câmbio a confirmar',
