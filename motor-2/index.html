@@ -46,6 +46,12 @@ a{color:var(--brand)}:focus-visible{outline:3px solid var(--brand);outline-offse
 .oferta-match .destaque-oferta{margin:10px 0}
 .oferta-match .oferta-alerta{color:#854d0e}
 .oferta-match .match-fotos-miniatura{max-height:170px}
+.comparacao{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,13rem),1fr));gap:12px}
+.comparacao article{min-width:0;padding:12px;background:#f1f5f9;border-radius:8px}
+.comparacao h4{margin:0 0 6px}
+.comparacao p{margin:4px 0}
+#estado-busca:empty{display:none}
+#estado-busca[data-erro]{color:#9f1239}
 
 </style>
 <link rel="stylesheet" href="/fotos-match.css">
@@ -68,38 +74,12 @@ a{color:var(--brand)}:focus-visible{outline:3px solid var(--brand);outline-offse
       <label class="campo">Município no RS<input name="cidade" list="lista-cidades" autocomplete="off" placeholder="Digite para buscar" required><datalist id="lista-cidades"></datalist></label>
     </div>
   </section>
-  <section class="card" aria-labelledby="titulo-perfil">
-    <h2 id="titulo-perfil">Como você usa o carro?</h2>
+  <section class="card" aria-labelledby="titulo-pagamento">
+    <h2 id="titulo-pagamento">Seu orçamento</h2>
     <div class="grid">
-      <label class="campo">Uso principal<select name="missao" required></select></label>
-      <label class="campo">Pessoas no uso principal<select name="pessoas" required></select><small>Conte também quem dirige. Escolha 2 para 1–2 pessoas e 4 para 3–4.</small></label>
-      <label class="campo">Onde vai rodar mais?<select name="contexto" required></select></label>
-      <label class="campo" id="campo-tipo-entrega" hidden>Tipo de entrega<select name="tipoEntrega" required disabled></select></label>
-      <label class="campo" id="campo-aplicativo" hidden>Aplicativo de entregas<select name="aplicativo" disabled></select></label>
+      <label class="campo">Entrada em dinheiro (R$)<input name="entrada" type="number" min="0" max="10000000" step=".01" value="0" required><small>Para compra à vista, informe o valor disponível em dinheiro.</small></label>
+      <label class="campo">Valor máximo da parcela (R$/mês)<input name="parcela" type="number" min="0" max="10000000" step=".01" value="0" required><small>Use zero se pretende comprar sem financiamento.</small></label>
     </div>
-    <fieldset>
-      <legend>O que mais importa no próximo carro?</legend>
-      <div class="grid prioridades">
-        <label class="campo">Primeira prioridade<select name="prioridade1" required></select></label>
-        <label class="campo">Segunda prioridade<select name="prioridade2" required></select></label>
-        <label class="campo">Terceira prioridade<select name="prioridade3" required></select></label>
-      </div>
-    </fieldset>
-    <details>
-      <summary>Outras preferências</summary>
-      <div class="grid">
-        <label class="campo">O que espera da compra?<select name="motivacao"></select></label>
-        <label class="campo">Carroceria preferida<select name="carroceria"></select></label>
-        <label class="campo">Câmbio<select name="cambio"></select></label>
-        <label class="campo">Combustível<select name="combustivel"></select></label>
-        <label class="campo">Ano-modelo de preferência (a partir de)<input name="ano" type="number" min="1980" max="2100" step="1"></label>
-      </div>
-    </details>
-    <fieldset>
-      <legend>Evite o que não combina com você</legend>
-      <small>Marque só o que importa para você. É opcional.</small>
-      <div id="lista-aversoes"></div>
-    </fieldset>
   </section>
   <section class="card" aria-labelledby="titulo-troca">
     <h2 id="titulo-troca">Veículo na troca</h2>
@@ -245,19 +225,49 @@ a{color:var(--brand)}:focus-visible{outline:3px solid var(--brand);outline-offse
       <button id="repetir-fipe" class="secundario" type="button" hidden>Tentar carregar de novo</button>
     </fieldset>
   </section>
-  <section class="card" aria-labelledby="titulo-pagamento">
-    <h2 id="titulo-pagamento">Capacidade de pagamento</h2>
+  <section class="card" aria-labelledby="titulo-perfil">
+    <h2 id="titulo-perfil">Como você usa o carro?</h2>
     <div class="grid">
-      <label class="campo">Entrada em dinheiro (R$)<input name="entrada" type="number" min="0" max="10000000" step=".01" value="0" required><small>Para compra à vista, informe o valor disponível em dinheiro.</small></label>
-      <label class="campo">Valor máximo da parcela (R$/mês)<input name="parcela" type="number" min="0" max="10000000" step=".01" value="0" required><small>Use zero para compra sem financiamento. Os prazos são calculados por oferta.</small></label>
+      <label class="campo">Uso principal<select name="missao" required></select></label>
+      <label class="campo">Pessoas no uso principal<select name="pessoas" required></select><small>Conte também quem dirige. Escolha 2 para 1–2 pessoas e 4 para 3–4.</small></label>
+      <label class="campo">Onde vai rodar mais?<select name="contexto" required></select></label>
+      <label class="campo" id="campo-tipo-entrega" hidden>Tipo de entrega<select name="tipoEntrega" required disabled></select></label>
+      <label class="campo" id="campo-aplicativo" hidden>Aplicativo de entregas<select name="aplicativo" disabled></select></label>
     </div>
+    <fieldset>
+      <legend>O que mais importa no próximo carro?</legend>
+      <div class="grid prioridades">
+        <label class="campo">Primeira prioridade<select name="prioridade1" required></select></label>
+        <label class="campo">Segunda prioridade<select name="prioridade2" required></select></label>
+        <label class="campo">Terceira prioridade<select name="prioridade3" required></select></label>
+      </div>
+    </fieldset>
+    <details>
+      <summary>Outras preferências</summary>
+      <div class="grid">
+        <label class="campo">O que espera da compra?<select name="motivacao"></select></label>
+        <label class="campo">Carroceria preferida<select name="carroceria"></select></label>
+        <label class="campo">Câmbio<select name="cambio"></select></label>
+        <label class="campo">Combustível<select name="combustivel"></select></label>
+        <label class="campo">Ano-modelo de preferência (a partir de)<input name="ano" type="number" min="1980" max="2100" step="1"></label>
+      </div>
+    </details>
+    <fieldset>
+      <legend>Evite o que não combina com você</legend>
+      <small>Marque só o que importa para você. É opcional.</small>
+      <div id="lista-aversoes"></div>
+    </fieldset>
+  </section>
+  <section class="card" aria-label="Buscar recomendações">
     <p><button type="submit" id="buscar">Buscar meu Match</button></p>
+    <p id="estado-busca" class="meta" role="status" tabindex="-1"></p>
   </section>
 </form>
 <section id="resultados" aria-labelledby="titulo-resultados" hidden>
   <h2 id="titulo-resultados" tabindex="-1">Carros indicados para o seu perfil</h2>
   <p id="resumo" class="resumo" role="status"></p>
   <div id="previa-troca"></div>
+  <div id="comparacao"></div>
   <div id="ofertas"></div>
   <button class="secundario" type="button" id="editar">Rever minhas respostas</button>
 </section>
@@ -269,6 +279,7 @@ const api = document.querySelector('meta[name="veicmatch-motor-2-api"]').content
 const apiFipe = 'https://script.google.com/macros/s/AKfycbxnLLJ5Sbg__atv4CnbwXXyAf9iRmi0xs0WinKucyHTEw5kn6USDa4EwQvdnL3bf7a2/exec';
 const form = document.getElementById('questionario');
 const estado = document.getElementById('estado');
+const estadoBusca = document.getElementById('estado-busca');
 const saida = document.getElementById('resultados');
 const botao = document.getElementById('buscar');
 const moeda = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -317,7 +328,13 @@ function preencher(nome, opcoes, inicial = 'Selecione') {
 }
 async function consultar(dados) {
   const opcoes = dados ? { method: 'POST', body: JSON.stringify(dados) } : { method: 'GET' };
-  const resposta = await fetch(api, { ...opcoes, credentials: 'omit', redirect: 'follow' });
+  let resposta;
+  try {
+    resposta = await fetch(api, { ...opcoes, credentials: 'omit', redirect: 'follow', signal: AbortSignal.timeout(45000) });
+  } catch (erro) {
+    if (erro.name === 'TimeoutError') throw new Error('A consulta demorou mais que o esperado. Tente novamente com os mesmos dados.');
+    throw new Error('A conexão com o estoque falhou. Tente novamente com os mesmos dados.');
+  }
   if (!resposta.ok) throw new Error('Serviço indisponível. Tente novamente em instantes.');
   if (!resposta.headers.get('content-type')?.includes('application/json')) {
     throw new Error('Serviço indisponível. Confira a configuração do Apps Script.');
@@ -490,6 +507,38 @@ function montarLinkAnuncio(link) {
     return null;
   }
 }
+function menorPlano(item) {
+  return (item.planos || []).reduce((menor, plano) => !menor || plano.valor < menor.valor ? plano : menor, null);
+}
+function mostrarNota(nota) {
+  return Number.isFinite(nota) ? numero.format(nota) + '/10' : 'a confirmar';
+}
+function montarComparacao(indicacoes, perfil) {
+  const secao = elemento('section', null, 'card');
+  secao.append(elemento('h3', 'Compare as indicações'));
+  const grade = elemento('div', null, 'comparacao');
+  const notasPorCarro = indicacoes.map(item => new Map((item.prioridades || []).map(p => [p.atributo, p.nota])));
+  const criterios = perfil.prioridades.filter(criterio => {
+    const notas = notasPorCarro.map(notas => notas.get(criterio)).filter(Number.isFinite);
+    return new Set(notas).size > 1;
+  });
+  indicacoes.forEach((item, indice) => {
+    const coluna = elemento('article');
+    coluna.append(elemento('h4', item.nome));
+    const origem = item.origemPreco || 'Preço de referência';
+    if (Number.isFinite(item.preco)) coluna.append(elemento('p', moeda.format(item.preco) + ' · ' + origem));
+    const plano = menorPlano(item);
+    if (plano) coluna.append(elemento('p', 'Parcela estimada · ' + plano.meses + '× de ' + moeda.format(plano.valor), 'meta'));
+    else if (item.cobertoPelaEntrada) coluna.append(elemento('p', 'Coberto pela entrada', 'meta'));
+    coluna.append(elemento('p', item.oferta?.municipio || (item.oferta ? 'Município a confirmar' : 'Sem anúncio nesta busca'), 'meta'));
+    for (const criterio of criterios) {
+      coluna.append(elemento('p', criterio + ' · ' + mostrarNota(notasPorCarro[indice].get(criterio))));
+    }
+    grade.append(coluna);
+  });
+  secao.append(grade);
+  return secao;
+}
 function montarOferta(item, perfil, ajuste) {
   const card = elemento('article', null, 'card oferta-match');
   card.append(elemento('h3', item.nome));
@@ -528,7 +577,7 @@ function montarOferta(item, perfil, ajuste) {
     if (local) card.append(elemento('p', local, 'meta'));
   }
   const linhaParcela = p => p.meses + '× de ' + moeda.format(p.valor);
-  const menorParcela = planos.reduce((menor, p) => !menor || p.valor < menor.valor ? p : menor, null);
+  const menorParcela = menorPlano(item);
   const financiamento = item.financiamento;
   if (menorParcela) {
     card.append(elemento('p', (planos.length > 1 ? 'Menor parcela estimada · ' : 'Parcela estimada · ')
@@ -543,12 +592,7 @@ function montarOferta(item, perfil, ajuste) {
     }
   } else if (item.cobertoPelaEntrada) card.append(elemento('p', 'Valor coberto pela entrada informada.', 'destaque-oferta'));
   else if (item.adicional > 0) card.append(elemento('p', 'Valor adicional necessário · ' + moeda.format(item.adicional), 'destaque-oferta'));
-  const mostrarNota = n => Number.isFinite(n) ? numero.format(n) + '/10' : 'a confirmar';
   const prioridades = item.prioridades || [];
-  const melhorPrioridade = prioridades.filter(p => Number.isFinite(p.nota))
-    .reduce((melhor, p) => !melhor || p.nota > melhor.nota ? p : melhor, null);
-  if (melhorPrioridade) card.append(elemento('p', 'Destaque nas suas prioridades · ' + melhorPrioridade.atributo
-    + ' · ' + mostrarNota(melhorPrioridade.nota), 'destaque-oferta'));
   const alertas = pontosEvitados(item);
   if (alertas.length) card.append(elemento('p', 'Você pediu para evitar · '
     + alertas.map(p => descricaoAversao[p.atributo] || p.atributo).join(' · '), 'destaque-oferta oferta-alerta'));
@@ -562,9 +606,9 @@ function montarOferta(item, perfil, ajuste) {
     card.append(destaques);
   }
   const link = montarLinkAnuncio(anuncio?.link);
-  if (link) card.append(link);
-  else if (!anuncio) card.append(elemento('p', 'Sem anúncio nesta indicação.', 'meta'));
-  else card.append(elemento('p', 'Link do anúncio indisponível.', 'meta'));
+  if (link) card.append(link, elemento('p', 'Confirme o preço e a disponibilidade com a loja.', 'meta'));
+  else if (!anuncio) card.append(elemento('p', 'Sem anúncio nesta busca. O valor é uma referência da FIPE.', 'meta'));
+  else card.append(elemento('p', 'O link da loja está indisponível para esta oferta.', 'meta'));
   const analise = elemento('details', null, 'analise-oferta');
   analise.append(elemento('summary', 'Ver análise completa'));
   const detalhes = elemento('dl');
@@ -618,9 +662,9 @@ function mostrarResposta(resposta, avaliacao, perfil) {
   const indicacoes = resposta.resultados.slice(0, 3);
   if (!resposta.ordenadoPorAversoes) indicacoes.sort((a, b) => pontosEvitados(a).length - pontosEvitados(b).length);
   const mensagens = {
-    missao: 'Nenhuma versão passou pela triagem para o uso e a plataforma escolhidos.',
-    lotacao: 'As opções encontradas para esse uso têm lotação insuficiente ou a confirmar.',
-    orcamento: 'Nenhuma opção compatível com o perfil e a lotação cabe no limite informado.'
+    missao: 'Não encontramos opções para o uso informado. Reveja o uso e, se houver, a plataforma escolhida.',
+    lotacao: 'Nenhuma opção encontrada tem a quantidade de lugares confirmada para o seu grupo. Reveja o uso ou a lotação.',
+    orcamento: 'Nenhuma opção encontrada cabe no seu orçamento. Confira a entrada, a troca e o limite mensal.'
   };
   resumo.classList.toggle('ajuste', resposta.ajuste);
   if (resposta.ajuste) {
@@ -633,10 +677,12 @@ function mostrarResposta(resposta, avaliacao, perfil) {
   if (indicacoes.length > 1 && perfil.aversoes.length) {
     resumo.textContent += ' Na lista, aparecem primeiro os carros com menos pontos de atenção no que você pediu para evitar.';
   }
+  document.getElementById('comparacao').replaceChildren(...(indicacoes.length > 1 ? [montarComparacao(indicacoes, perfil)] : []));
   document.getElementById('ofertas').replaceChildren(...indicacoes.map(item => montarOferta(item, perfil, resposta.ajuste)));
   const previa = document.getElementById('previa-troca');
   previa.replaceChildren();
   if (avaliacao) previa.append(montarPreAvaliacao(avaliacao));
+  document.getElementById('editar').dataset.campo = { missao: 'missao', lotacao: 'pessoas', orcamento: 'entrada' }[resposta.situacao] || 'missao';
   saida.hidden = false;
   document.getElementById('titulo-resultados').focus();
 }
@@ -648,18 +694,21 @@ etapasFipe.slice(0, -1).forEach(([nome], indice) => {
 });
 campo('situacaoQuitacao').addEventListener('change', atualizarQuitacao);
 repetirFipe.addEventListener('click', () => carregarFipe(etapaComErro));
-document.getElementById('editar').addEventListener('click', () => campo('missao').focus());
+document.getElementById('editar').addEventListener('click', evento => campo(evento.currentTarget.dataset.campo).focus());
 form.addEventListener('submit', async evento => {
   evento.preventDefault();
+  if (botao.disabled) return;
+  estadoBusca.removeAttribute('data-erro');
+  estadoBusca.textContent = '';
   const dados = new FormData(form);
   if (!String(dados.get('nome') || '').trim()) {
-    estado.textContent = 'Informe seu nome.';
+    estadoBusca.textContent = 'Informe seu nome.';
     campo('nome').focus();
     return;
   }
   const prioridades = [1, 2, 3].map(i => dados.get('prioridade' + i));
   if (new Set(prioridades).size !== 3) {
-    estado.textContent = 'Escolha três prioridades diferentes.';
+    estadoBusca.textContent = 'Escolha três prioridades diferentes.';
     campo('prioridade1').focus();
     return;
   }
@@ -688,14 +737,20 @@ form.addEventListener('submit', async evento => {
   saida.hidden = true;
   botao.disabled = true;
   botao.textContent = 'Procurando no estoque…';
-  estado.textContent = 'Procurando no estoque…';
+  estadoBusca.textContent = 'Consultando o estoque e conferindo seu orçamento…';
+  const demora = setTimeout(() => {
+    estadoBusca.textContent = 'A busca ainda está em andamento. Suas respostas continuam nesta tela.';
+  }, 8000);
   try {
     const resposta = await consultar(perfil);
-    estado.textContent = '';
+    estadoBusca.textContent = '';
     mostrarResposta(resposta, avaliacao, perfil);
   } catch (erro) {
-    estado.textContent = erro.message || 'Não foi possível concluir a busca.';
+    estadoBusca.setAttribute('data-erro', '');
+    estadoBusca.textContent = erro.message || 'Não foi possível concluir a busca. Tente novamente.';
+    estadoBusca.focus();
   } finally {
+    clearTimeout(demora);
     botao.disabled = false;
     botao.textContent = 'Buscar meu Match';
   }
