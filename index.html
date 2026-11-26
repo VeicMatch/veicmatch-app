@@ -1244,11 +1244,12 @@
     function ordenarPorProximidade(ofertas, origem) {
       return ofertas.map(carro => {
         // A resposta atual do Motor 1 termina o nome da loja com "(Cidade)".
-        const cidade = carro.cidade || String(carro.loja || "").match(/\(([^()]*)\)\s*$/)?.[1];
+        const cidadeDaLoja = String(carro.loja || "").match(/\(([^()]*)\)\s*$/)?.[1];
+        const cidade = carro.cidade || cidadeDaLoja;
         const uf = String(carro.uf || "RS").trim().toUpperCase();
         const sede = uf === "RS" ? cidadesPorNome.get(normalizarCidade(cidade)) : undefined;
         const distanciaKm = sede ? distanciaEntreSedes(origem, sede) : Infinity;
-        return { carro, distanciaKm };
+        return { carro, distanciaKm, cidade, cidadeDaLoja };
       }).sort((a, b) => {
         if (a.distanciaKm === b.distanciaKm) return 0;
         return a.distanciaKm < b.distanciaKm ? -1 : 1;
@@ -1462,7 +1463,7 @@
       return [nome, ano >= 1900 && ano <= 2100 ? ano : ""].filter(Boolean).join(" ");
     }
 
-    function criarOferta({ carro, distanciaKm }, textoTroca) {
+    function criarOferta({ carro, distanciaKm, cidade, cidadeDaLoja }, textoTroca) {
       const item = document.createElement("article");
       item.className = "match-item";
       const nome = tituloOferta(carro);
@@ -1471,9 +1472,9 @@
       const meta = document.createElement("div");
       meta.className = "match-meta";
       const km = Number(carro.km);
-      let proximidade = "Distância a confirmar";
-      if (distanciaKm === 0) proximidade = "Na sua cidade";
-      else if (Number.isFinite(distanciaKm)) proximidade = `~${Math.max(1, Math.round(distanciaKm))} km em linha reta`;
+      const proximidade = distanciaKm === 0 ? "Na sua cidade"
+        : !cidade ? "Localização a confirmar"
+        : normalizarCidade(cidade) === normalizarCidade(cidadeDaLoja) ? "" : cidade;
       for (const detalhe of [carro.loja, proximidade, km > 1 ? `${km.toLocaleString("pt-BR")} km rodados` : "Quilometragem a confirmar"]) {
         if (!detalhe) continue;
         const linha = document.createElement("div");
