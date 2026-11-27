@@ -5062,6 +5062,24 @@ window.veicMatchJustificativasDasNotas = {
       "motivo": "Motor 170 TSI de 116 cv com etanol e 109 cv com gasolina, com torque de 16,8 kgfm. A ficha indica 0 a 100 km/h em 10,5 s.",
       "ressalva": "",
       "fonte": "ShopCar · ficha Highline 2023–2026"
+    },
+    "Conforto": {
+      "nota": 7.5,
+      "motivo": "Ar-condicionado automático e bancos revestidos em couro.",
+      "ressalva": "",
+      "fonte": "Webmotors · Polo Highline 2026"
+    },
+    "Segurança": {
+      "nota": 7.5,
+      "motivo": "A ficha do Highline registra câmera de ré, sensores de estacionamento dianteiros e frenagem automática em manobras.",
+      "ressalva": "",
+      "fonte": "Webmotors · Polo Highline 2026"
+    },
+    "Tecnologia": {
+      "nota": 7.5,
+      "motivo": "A central multimídia oferece espelhamento do celular e carregamento por indução.",
+      "ressalva": "",
+      "fonte": "Webmotors · Polo Highline 2026"
     }
   }
 };
