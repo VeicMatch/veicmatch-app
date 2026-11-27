@@ -5119,5 +5119,261 @@ window.veicMatchJustificativasDasNotas = {
       "ressalva": "",
       "fonte": "VeícMatch · ficha Highline 2024"
     }
+  },
+  "chevrolet tracker|premier 1 2 turbo 12v flex aut|2024|automatico|flex": {
+    "Economia": {
+      "nota": 7.5,
+      "motivo": "10.4/13.2 km/l, cidade/estrada. Peso de 65% para cidade e 35% para estrada.",
+      "ressalva": "",
+      "fonte": "VeícMatch · revisão dos atributos"
+    },
+    "Desempenho": {
+      "nota": 7.5,
+      "motivo": "0–100 de referência em 9.4 s.",
+      "ressalva": "",
+      "fonte": "VeícMatch · revisão dos atributos"
+    }
+  },
+  "chevrolet tracker|premier 1 2 turbo 12v flex aut|2023|automatico|flex": {
+    "Espaço": {
+      "nota": 7.5,
+      "motivo": "Porta-malas documentado de 393 L. Lotação considerada quando disponível.",
+      "ressalva": "",
+      "fonte": "VeícMatch · revisão dos atributos"
+    },
+    "Desempenho": {
+      "nota": 7.5,
+      "motivo": "0–100 de referência em 9.4 s.",
+      "ressalva": "",
+      "fonte": "VeícMatch · revisão dos atributos"
+    }
+  },
+  "ford ecosport|freestyle 1 6 16v flex 5p|2012|manual|flex": {
+    "Economia": {
+      "nota": 6,
+      "motivo": "8.8/10.3 km/l, cidade/estrada. Peso de 65% para cidade e 35% para estrada.",
+      "ressalva": "",
+      "fonte": "VeícMatch · revisão dos atributos"
+    },
+    "Espaço": {
+      "nota": 6.5,
+      "motivo": "Porta-malas documentado de 296 L. Lotação considerada quando disponível.",
+      "ressalva": "",
+      "fonte": "VeícMatch · revisão dos atributos"
+    },
+    "Desempenho": {
+      "nota": 5.5,
+      "motivo": "0–100 de referência em 13.4 s.",
+      "ressalva": "",
+      "fonte": "VeícMatch · revisão dos atributos"
+    },
+    "Revenda": {
+      "nota": 8,
+      "motivo": "IVU/FENAUTO de outubro de 2026, por família, carroceria e faixa de idade. Usado como proxy nacional, sem inferir giro da versão.",
+      "ressalva": "",
+      "fonte": "VeícMatch · revisão dos atributos"
+    }
+  },
+  "hyundai i30|2 0 16v 145cv 5p aut|2011|automatico|gasolina": {
+    "Espaço": {
+      "nota": 7,
+      "motivo": "Porta-malas documentado de 340 L. Lotação considerada quando disponível.",
+      "ressalva": "",
+      "fonte": "VeícMatch · revisão dos atributos"
+    }
+  },
+  "chevrolet spin|premier 1 8 8v econo flex 5p aut|2024|automatico|flex": {
+    "Economia": {
+      "nota": 7,
+      "motivo": "9.8/12.3 km/l, cidade/estrada. Peso de 65% para cidade e 35% para estrada.",
+      "ressalva": "",
+      "fonte": "VeícMatch · revisão dos atributos"
+    },
+    "Espaço": {
+      "nota": 8.5,
+      "motivo": "Porta-malas documentado de 162 L. Lotação considerada quando disponível.",
+      "ressalva": "",
+      "fonte": "VeícMatch · revisão dos atributos"
+    }
+  },
+  "hyundai hb20|platinum 1 0 tb flex 12v aut|2026|automatico|flex": {
+    "Economia": {
+      "nota": 9,
+      "motivo": "13.2/14.7 km/l, cidade/estrada. Peso de 65% para cidade e 35% para estrada.",
+      "ressalva": "",
+      "fonte": "VeícMatch · revisão dos atributos"
+    }
+  },
+  "chevrolet agile|ltz 1 4 mpfi 8v flexpower 5p|2011|manual|flex": {
+    "Economia": {
+      "nota": 6.5,
+      "motivo": "9.4/11.5 km/l, cidade/estrada. Peso de 65% para cidade e 35% para estrada.",
+      "ressalva": "",
+      "fonte": "VeícMatch · revisão dos atributos"
+    },
+    "Espaço": {
+      "nota": 6.5,
+      "motivo": "Porta-malas documentado de 327 L. Lotação considerada quando disponível.",
+      "ressalva": "",
+      "fonte": "VeícMatch · revisão dos atributos"
+    }
+  },
+  "chevrolet onix|hatch 1 0 12v flex 5p mec|2025|manual|flex": {
+    "Economia": {
+      "nota": 9.5,
+      "motivo": "13.8/16.9 km/l, cidade/estrada. Peso de 65% para cidade e 35% para estrada.",
+      "ressalva": "",
+      "fonte": "VeícMatch · revisão dos atributos"
+    },
+    "Manutenção": {
+      "nota": 8,
+      "motivo": "A ficha registra correia em banho de óleo no motor 1.0 e orienta conferir a especificação do óleo e os comprovantes de serviço.",
+      "ressalva": "",
+      "fonte": "VeícMatch · ficha e pontos de atenção"
+    },
+    "Espaço": {
+      "nota": 6,
+      "motivo": "A ficha registra 5 lugares e porta-malas de 303 L. A lotação e a capacidade de bagagem embasam a avaliação de espaço.",
+      "ressalva": "",
+      "fonte": "VeícMatch · dados técnicos da ficha"
+    },
+    "Revenda": {
+      "nota": 9,
+      "motivo": "IVU/FENAUTO de outubro de 2026, por família, carroceria e faixa de idade. Usado como proxy nacional, sem inferir giro da versão.",
+      "ressalva": "",
+      "fonte": "VeícMatch · revisão dos atributos"
+    }
+  },
+  "chevrolet onix|hatch lt 1 0 12v tb flex 5p mec|2024|manual|flex": {
+    "Economia": {
+      "nota": 9.5,
+      "motivo": "13.9/16.7 km/l, cidade/estrada. Peso de 65% para cidade e 35% para estrada.",
+      "ressalva": "",
+      "fonte": "VeícMatch · revisão dos atributos"
+    },
+    "Espaço": {
+      "nota": 7,
+      "motivo": "O Onix LT turbo manual tem cinco lugares e porta-malas de 275 litros na ficha técnica.",
+      "ressalva": "",
+      "fonte": "www.shopcar.com.br"
+    },
+    "Desempenho": {
+      "nota": 7,
+      "motivo": "O motor 1.0 turbo entrega até 116 cv com etanol, combinado com câmbio manual de seis marchas. A ficha registra 0 a 100 km/h em 10,1 segundos.",
+      "ressalva": "",
+      "fonte": "www.shopcar.com.br"
+    }
+  },
+  "jeep compass|sport t270 1 3 tb 4x2 flex aut|2026|automatico|flex": {
+    "Economia": {
+      "nota": 7,
+      "motivo": "10.1/12.1 km/l, cidade/estrada. Peso de 65% para cidade e 35% para estrada.",
+      "ressalva": "",
+      "fonte": "VeícMatch · revisão dos atributos"
+    }
+  },
+  "chevrolet tracker|ltz 1 8 16v flex 4x2 aut|2015|automatico|flex": {
+    "Espaço": {
+      "nota": 6.5,
+      "motivo": "Porta-malas documentado de 306 L. Lotação considerada quando disponível.",
+      "ressalva": "",
+      "fonte": "VeícMatch · revisão dos atributos"
+    }
+  },
+  "chevrolet onix|hatch ltz 1 4 8v flexpower 5p mec|2019|manual|flex": {
+    "Economia": {
+      "nota": 8.5,
+      "motivo": "gasolina: 12,4 / 14,9 km/l · etanol: 8,5 / 10,3 km/l (cidade / estrada).",
+      "ressalva": "",
+      "fonte": "VeícMatch · consumo da ficha"
+    },
+    "Manutenção": {
+      "nota": 8,
+      "motivo": "A ficha orienta pedir o comprovante de manutenção da correia dentada.",
+      "ressalva": "",
+      "fonte": "VeícMatch · ficha e pontos de atenção"
+    },
+    "Espaço": {
+      "nota": 6,
+      "motivo": "A ficha registra 5 lugares e porta-malas de 280 L. A lotação e a capacidade de bagagem embasam a avaliação de espaço.",
+      "ressalva": "",
+      "fonte": "VeícMatch · dados técnicos da ficha"
+    },
+    "Desempenho": {
+      "nota": 6,
+      "motivo": "0–100 de referência em 12 s.",
+      "ressalva": "",
+      "fonte": "VeícMatch · revisão dos atributos"
+    },
+    "Revenda": {
+      "nota": 9,
+      "motivo": "IVU/FENAUTO de outubro de 2026, por família, carroceria e faixa de idade. Usado como proxy nacional, sem inferir giro da versão.",
+      "ressalva": "",
+      "fonte": "VeícMatch · revisão dos atributos"
+    }
+  },
+  "ford ka|1 0 se se plus tivct flex 5p|2016|manual|flex": {
+    "Espaço": {
+      "nota": 5.5,
+      "motivo": "Porta-malas documentado de 257 L. Lotação considerada quando disponível.",
+      "ressalva": "",
+      "fonte": "VeícMatch · revisão dos atributos"
+    }
+  },
+  "jeep compass|limited 2 0 4x2 flex 16v aut|2020|automatico|flex": {
+    "Espaço": {
+      "nota": 7.5,
+      "motivo": "Porta-malas documentado de 410 L. Lotação considerada quando disponível.",
+      "ressalva": "",
+      "fonte": "VeícMatch · revisão dos atributos"
+    },
+    "Revenda": {
+      "nota": 9,
+      "motivo": "IVU/FENAUTO de outubro de 2026, por família, carroceria e faixa de idade. Usado como proxy nacional, sem inferir giro da versão.",
+      "ressalva": "",
+      "fonte": "VeícMatch · revisão dos atributos"
+    }
+  },
+  "jeep compass|sport t270 1 3 tb 4x2 flex aut|2025|automatico|flex": {
+    "Economia": {
+      "nota": 7,
+      "motivo": "10.1/12 km/l, cidade/estrada. Peso de 65% para cidade e 35% para estrada.",
+      "ressalva": "",
+      "fonte": "VeícMatch · revisão dos atributos"
+    },
+    "Espaço": {
+      "nota": 7.5,
+      "motivo": "Porta-malas documentado de 410 L. Lotação considerada quando disponível.",
+      "ressalva": "",
+      "fonte": "VeícMatch · revisão dos atributos"
+    }
+  },
+  "ford ka|1 0 8v 1 0 8v st flex 3p|2013|manual|flex": {
+    "Economia": {
+      "nota": 8,
+      "motivo": "11,6/13,5 km/l com gasolina e 8,1/9,2 com etanol, cidade/estrada. Peso de 65% para cidade e 35% para estrada.",
+      "ressalva": "",
+      "fonte": "VeícMatch · revisão dos atributos"
+    },
+    "Espaço": {
+      "nota": 5.5,
+      "motivo": "Porta-malas documentado de 263 L. Lotação considerada quando disponível.",
+      "ressalva": "",
+      "fonte": "VeícMatch · revisão dos atributos"
+    }
+  },
+  "fiat argo|1 0 6v|2024|manual|flex": {
+    "Economia": {
+      "nota": 9,
+      "motivo": "Economia · 19/11/2026 · 13,3/14,7 km/l (gasolina) e 9,4/10,2 km/l (etanol), cidade/estrada. Peso de 65% para cidade e 35% para estrada. Nota de 8,5 para 9.",
+      "ressalva": "",
+      "fonte": "VeícMatch · revisão dos atributos"
+    },
+    "Espaço": {
+      "nota": 6.5,
+      "motivo": "A ficha registra 5 lugares e porta-malas de 300 L. A lotação e a capacidade de bagagem embasam a avaliação de espaço.",
+      "ressalva": "",
+      "fonte": "VeícMatch · dados técnicos da ficha"
+    }
   }
 };
