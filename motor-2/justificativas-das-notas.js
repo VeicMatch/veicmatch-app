@@ -5093,5 +5093,31 @@ window.veicMatchJustificativasDasNotas = {
       "ressalva": "O índice é da família Polo. A liquidez específica do Highline depende da unidade e do mercado local.",
       "fonte": "FENAUTO · IVU outubro de 2026"
     }
+  },
+  "volkswagen nivus|1 0 200 tsi total flex highline automatico|2024|automatico|flex": {
+    "Economia": {
+      "nota": 8.5,
+      "motivo": "A ficha brasileira da versão indica 12,1 km/l na cidade e 14,2 km/l na estrada com gasolina.",
+      "ressalva": "",
+      "fonte": "VeícMatch · ficha Highline 2024"
+    },
+    "Manutenção": {
+      "nota": 7,
+      "motivo": "Motor turbo de injeção direta e câmbio automático de seis marchas.",
+      "ressalva": "",
+      "fonte": "VeícMatch · ficha Highline 2024"
+    },
+    "Espaço": {
+      "nota": 7.5,
+      "motivo": "Cinco lugares e porta-malas de 415 litros.",
+      "ressalva": "",
+      "fonte": "VeícMatch · ficha Highline 2024"
+    },
+    "Desempenho": {
+      "nota": 7,
+      "motivo": "Motor 200 TSI de até 128 cv com etanol e 116 cv com gasolina. A ficha registra 0 a 100 km/h em 10 segundos.",
+      "ressalva": "",
+      "fonte": "VeícMatch · ficha Highline 2024"
+    }
   }
 };
