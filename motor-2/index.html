@@ -49,6 +49,10 @@ a{color:var(--brand)}:focus-visible{outline:3px solid var(--brand);outline-offse
 .comparacao article{min-width:0;padding:12px;background:#f1f5f9;border-radius:8px}
 .comparacao h4{margin:0 0 6px}
 .comparacao p{margin:4px 0}
+.comparacao .nota-embasada+.nota-embasada{margin-top:10px;padding-top:8px;border-top:1px solid var(--line)}
+.comparacao .nota-embasada .meta{margin:2px 0;overflow-wrap:anywhere}
+.embasamento-notas{margin:16px 0}
+.embasamento-notas dd small{display:block;margin-top:3px;overflow-wrap:anywhere}
 #estado-busca:empty{display:none}
 #estado-busca[data-erro]{color:#9f1239}
 
@@ -272,6 +276,7 @@ a{color:var(--brand)}:focus-visible{outline:3px solid var(--brand);outline-offse
 </section>
 </main>
 <script src="/fotos-match.js"></script>
+<script src="/motor-2/justificativas-das-notas.js"></script>
 <script>
 'use strict';
 const api = document.querySelector('meta[name="veicmatch-motor-2-api"]').content.trim();
@@ -515,14 +520,48 @@ function menorPlano(item) {
 function mostrarNota(nota) {
   return numero.format(nota) + '/10';
 }
+function justificativasDaFicha(item) {
+  const partes = [item.nome, item.versao, item.ano, item.cambio, item.combustivel]
+    .map(valor => normalizarPreferencia(valor).replace(/[^a-z0-9]+/g, ' ').trim());
+  if (partes.some(valor => !valor)) return new Map();
+  const ficha = window.veicMatchJustificativasDasNotas?.[partes.join('|')];
+  const notasDoMatch = new Map([...(item.aversoes || []), ...(item.prioridades || [])]
+    .map(p => [p.atributo, p.nota]));
+  return new Map(Object.entries(ficha || {}).filter(([atributo, evidencia]) =>
+    !notasDoMatch.has(atributo) || notasDoMatch.get(atributo) === evidencia.nota));
+}
+function montarNotaComJustificativa(atributo, nota, evidencia) {
+  const bloco = elemento('div', null, 'nota-embasada');
+  bloco.append(elemento('p', atributo + ' · ' + mostrarNota(nota)));
+  if (evidencia) bloco.append(elemento('p', evidencia.motivo, 'meta'));
+  return bloco;
+}
+function montarEmbasamento(prioridades, evidencias) {
+  const secao = elemento('section', null, 'embasamento-notas');
+  secao.append(elemento('h4', 'O que embasa as notas'));
+  const lista = elemento('dl');
+  const ordem = new Set([...prioridades.map(p => p.atributo), ...evidencias.keys()]);
+  for (const atributo of ordem) {
+    const dado = evidencias.get(atributo);
+    if (!dado) continue;
+    const nota = prioridades.find(p => p.atributo === atributo)?.nota;
+    const titulo = Number.isFinite(nota) ? atributo + ' · ' + mostrarNota(nota) : atributo;
+    const descricao = elemento('dd', [dado.motivo, dado.ressalva].filter(Boolean).join('\n'));
+    descricao.append(elemento('small', 'Fonte · ' + dado.fonte));
+    lista.append(elemento('dt', titulo), descricao);
+  }
+  secao.append(lista);
+  return secao;
+}
 function montarComparacao(indicacoes, perfil) {
   const secao = elemento('section', null, 'card');
   secao.append(elemento('h3', 'Compare as indicações'));
   const grade = elemento('div', null, 'comparacao');
   const notasPorCarro = indicacoes.map(item => new Map((item.prioridades || []).map(p => [p.atributo, p.nota])));
+  const justificativas = indicacoes.map(justificativasDaFicha);
   const criterios = perfil.prioridades.filter(criterio => {
     const notas = notasPorCarro.map(notas => notas.get(criterio)).filter(Number.isFinite);
-    return new Set(notas).size > 1;
+    return new Set(notas).size > 1 || justificativas.some(ficha => ficha.has(criterio));
   });
   indicacoes.forEach((item, indice) => {
     const coluna = elemento('article');
@@ -535,14 +574,14 @@ function montarComparacao(indicacoes, perfil) {
     coluna.append(elemento('p', item.oferta?.municipio || (item.oferta ? 'Município a confirmar' : 'Sem anúncio nesta busca'), 'meta'));
     for (const criterio of criterios) {
       const nota = notasPorCarro[indice].get(criterio);
-      if (Number.isFinite(nota)) coluna.append(elemento('p', criterio + ' · ' + mostrarNota(nota)));
+      if (Number.isFinite(nota)) coluna.append(montarNotaComJustificativa(criterio, nota, justificativas[indice].get(criterio)));
     }
     grade.append(coluna);
   });
   secao.append(grade);
   return secao;
 }
-function montarOferta(item, perfil, ajuste) {
+function montarOferta(item, perfil, ajuste, mostrarJustificativas) {
   const card = elemento('article', null, 'card oferta-match');
   card.append(elemento('h3', item.nome));
   const galeria = window.criarGaleriaMatch?.(item.oferta?.fotos, item.nome);
@@ -596,6 +635,13 @@ function montarOferta(item, perfil, ajuste) {
   } else if (item.cobertoPelaEntrada) card.append(elemento('p', 'Valor coberto pela entrada informada.', 'destaque-oferta'));
   else if (item.adicional > 0) card.append(elemento('p', 'Valor adicional necessário · ' + moeda.format(item.adicional), 'destaque-oferta'));
   const prioridades = (item.prioridades || []).filter(p => Number.isFinite(p.nota));
+  const evidencias = justificativasDaFicha(item);
+  if (mostrarJustificativas) {
+    for (const p of prioridades) {
+      const dado = evidencias.get(p.atributo);
+      if (dado) card.append(montarNotaComJustificativa(p.atributo, p.nota, dado));
+    }
+  }
   const alertas = pontosEvitados(item);
   if (alertas.length) card.append(elemento('p', 'Você pediu para evitar · '
     + alertas.map(p => descricaoAversao[p.atributo] || p.atributo).join(' · '), 'destaque-oferta oferta-alerta'));
@@ -633,7 +679,7 @@ function montarOferta(item, perfil, ajuste) {
   }
   acrescentar(detalhes, 'Afinidade com seu perfil', Number.isFinite(item.afinidade)
     ? item.afinidade.toLocaleString('pt-BR', { maximumFractionDigits: 2 }) + '/10' : '');
-  acrescentar(detalhes, 'Suas prioridades', prioridades.map(p => p.atributo + ' · ' + mostrarNota(p.nota)).join('\n'));
+  acrescentar(detalhes, 'Suas prioridades', prioridades.filter(p => !evidencias.has(p.atributo)).map(p => p.atributo + ' · ' + mostrarNota(p.nota)).join('\n'));
   const aversoesAvaliadas = (item.aversoes || []).filter(p => Number.isFinite(p.nota) && Number.isFinite(p.referencia));
   acrescentar(detalhes, 'Como o carro atende ao que você quer evitar', aversoesAvaliadas.map(p => {
     const criterio = p.atributo === 'Economia' && item.combustivel === 'Elétrico'
@@ -646,6 +692,7 @@ function montarOferta(item, perfil, ajuste) {
   acrescentar(detalhes, 'Consumo', String(item.consumo || '').replace(/\bkm\/le\b/gi, 'km por litro equivalente'));
   acrescentar(detalhes, 'Porta-malas', Number(item.portaMalas) > 0 ? item.portaMalas + ' L' : '');
   analise.append(detalhes);
+  if (evidencias.size) analise.append(montarEmbasamento(prioridades, evidencias));
   if (anuncio) analise.append(montarLinkAtendimento(item));
   if (item.aplicativo) {
     const { plataformas, validarPicape, regra, validarLoggi, passageiros } = item.aplicativo;
@@ -679,7 +726,7 @@ function mostrarResposta(resposta, avaliacao, perfil) {
     resumo.textContent += ' Na lista, aparecem primeiro os carros com menos pontos de atenção no que você pediu para evitar.';
   }
   document.getElementById('comparacao').replaceChildren(...(indicacoes.length > 1 ? [montarComparacao(indicacoes, perfil)] : []));
-  document.getElementById('ofertas').replaceChildren(...indicacoes.map(item => montarOferta(item, perfil, resposta.ajuste)));
+  document.getElementById('ofertas').replaceChildren(...indicacoes.map(item => montarOferta(item, perfil, resposta.ajuste, indicacoes.length === 1)));
   const previa = document.getElementById('previa-troca');
   previa.replaceChildren();
   if (avaliacao) previa.append(montarPreAvaliacao(avaliacao));
@@ -760,3 +807,4 @@ iniciar();
 </script>
 </body>
 </html>
+
