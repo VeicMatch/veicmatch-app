@@ -5375,5 +5375,45 @@ window.veicMatchJustificativasDasNotas = {
       "ressalva": "",
       "fonte": "VeícMatch · dados técnicos da ficha"
     }
+  },
+  "fiat mobi|trekking 1 0 flex 5p|2022|manual|flex": {
+    "Economia": {
+      "nota": 9,
+      "motivo": "Consumo cidade/estrada de 13,5/15,0 km/l com gasolina e 9,6/10,4 km/l com etanol.",
+      "ressalva": "",
+      "fonte": "Oficial · Mobi Trekking 1.0 M-5"
+    }
+  },
+  "hyundai hb20|1 0 evolution 12v|2022|manual|flex": {
+    "Economia": {
+      "nota": 9,
+      "motivo": "Consumo cidade/estrada de 13,1/15,0 km/l com gasolina e 9,8/10,7 km/l com etanol.",
+      "ressalva": "",
+      "fonte": "Oficial · HB20 Evolution 1.0 M-5"
+    }
+  },
+  "hyundai hb20|1 0 vision 12v|2022|manual|flex": {
+    "Economia": {
+      "nota": 9,
+      "motivo": "Consumo cidade/estrada de 13,1/15,0 km/l com gasolina e 9,8/10,7 km/l com etanol.",
+      "ressalva": "",
+      "fonte": "Oficial · HB20 Vision 1.0 M-5"
+    }
+  },
+  "peugeot 208|1 6 griffe 16v|2016|manual|flex": {
+    "Economia": {
+      "nota": 8,
+      "motivo": "Consumo cidade/estrada de 12,3/14,0 km/l com gasolina e 8,5/10,0 km/l com etanol.",
+      "ressalva": "",
+      "fonte": "Oficial · 208 Griffe 1.6 M-5"
+    }
+  },
+  "renault kardian|1 0 techno tb 12v|2025|automatico|flex": {
+    "Economia": {
+      "nota": 8,
+      "motivo": "Consumo cidade/estrada de 12,2/13,8 km/l com gasolina e 8,8/9,7 km/l com etanol.",
+      "ressalva": "",
+      "fonte": "Etiqueta Inmetro · Kardian Techno DCT 2025"
+    }
   }
 };
