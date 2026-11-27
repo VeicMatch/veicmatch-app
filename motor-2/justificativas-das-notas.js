@@ -4999,5 +4999,49 @@ window.veicMatchJustificativasDasNotas = {
       "ressalva": "",
       "fonte": "ShopCar · Comfortline 2025–2026"
     }
+  },
+  "volkswagen tera|1 0 170 tsi high automatico|2026|automatico|flex": {
+    "Economia": {
+      "nota": 8,
+      "motivo": "Com gasolina, a ficha registra 12,2 km/l na cidade e 14,5 km/l na estrada. Com etanol, 8,6 e 10,3 km/l.",
+      "ressalva": "",
+      "fonte": "VeícMatch · ficha High 2026"
+    },
+    "Manutenção": {
+      "nota": 7,
+      "motivo": "Motor turbo com câmbio automático de seis marchas.",
+      "ressalva": "",
+      "fonte": "VeícMatch · ficha High 2026"
+    },
+    "Espaço": {
+      "nota": 7,
+      "motivo": "A ficha de origem registra cinco lugares e porta-malas de 350 litros pelo padrão VDA.",
+      "ressalva": "",
+      "fonte": "VeícMatch · ficha High 2026"
+    },
+    "Conforto": {
+      "nota": 8,
+      "motivo": "Ar-condicionado digital com comando por toque e ajuste de altura do banco do motorista.",
+      "ressalva": "",
+      "fonte": "VeícMatch · ficha High 2026"
+    },
+    "Segurança": {
+      "nota": 9,
+      "motivo": "Seis airbags, frenagem autônoma de emergência e controle adaptativo de velocidade e distância.",
+      "ressalva": "",
+      "fonte": "VeícMatch · ficha High 2026"
+    },
+    "Tecnologia": {
+      "nota": 8,
+      "motivo": "O controle adaptativo de velocidade ajusta a velocidade para manter distância do veículo à frente.",
+      "ressalva": "",
+      "fonte": "VeícMatch · ficha High 2026"
+    },
+    "Desempenho": {
+      "nota": 7,
+      "motivo": "O 1.0 170 TSI entrega até 116 cv com etanol e trabalha com câmbio automático de seis marchas.",
+      "ressalva": "",
+      "fonte": "VeícMatch · ficha High 2026"
+    }
   }
 };
