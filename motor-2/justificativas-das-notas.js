@@ -5043,5 +5043,25 @@ window.veicMatchJustificativasDasNotas = {
       "ressalva": "",
       "fonte": "VeícMatch · ficha High 2026"
     }
+  },
+  "volkswagen polo|1 0 170 tsi highline automatico|2026|automatico|flex": {
+    "Manutenção": {
+      "nota": 7,
+      "motivo": "Motor turbo com injeção direta e câmbio automático de seis marchas.",
+      "ressalva": "",
+      "fonte": "ShopCar · ficha Highline 2023–2026"
+    },
+    "Espaço": {
+      "nota": 6.5,
+      "motivo": "Cinco lugares e porta-malas de 300 litros.",
+      "ressalva": "",
+      "fonte": "ShopCar · ficha Highline 2023–2026"
+    },
+    "Desempenho": {
+      "nota": 7,
+      "motivo": "Motor 170 TSI de 116 cv com etanol e 109 cv com gasolina, com torque de 16,8 kgfm. A ficha indica 0 a 100 km/h em 10,5 s.",
+      "ressalva": "",
+      "fonte": "ShopCar · ficha Highline 2023–2026"
+    }
   }
 };
