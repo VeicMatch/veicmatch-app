@@ -5080,6 +5080,18 @@ window.veicMatchJustificativasDasNotas = {
       "motivo": "A central multimídia oferece espelhamento do celular e carregamento por indução.",
       "ressalva": "",
       "fonte": "Webmotors · Polo Highline 2026"
+    },
+    "Economia": {
+      "nota": 8,
+      "motivo": "A ficha do Highline 2026 indica 12,5 km/l na cidade e 15,2 km/l na estrada com gasolina. Com etanol, são 8,8 e 10,7 km/l.",
+      "ressalva": "Dados da ficha consultada. Outra ficha da configuração registra 12,2 e 15,1 km/l com gasolina.",
+      "fonte": "Webmotors · ficha Highline 2026"
+    },
+    "Revenda": {
+      "nota": 8,
+      "motivo": "O Polo ficou em segundo lugar entre os hatches usados de até três anos no IVU nacional de outubro de 2026.",
+      "ressalva": "O índice é da família Polo. A liquidez específica do Highline depende da unidade e do mercado local.",
+      "fonte": "FENAUTO · IVU outubro de 2026"
     }
   }
 };
