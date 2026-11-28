@@ -297,9 +297,11 @@
         <div class="grid-2">
           <div class="field">
             <label for="desejadoMarca">Marca desejada</label>
-            <select id="desejadoMarca" required>
+            <select id="desejadoMarca" aria-describedby="estadoEstoqueMarca" required>
               <option value="">Carregando marcas...</option>
             </select>
+            <p class="helper" id="estadoEstoqueMarca" role="status"></p>
+            <button type="button" class="btn-ajustar-busca" id="repetirEstoqueMarca" hidden>Tentar novamente</button>
           </div>
 
           <div class="field">
@@ -313,7 +315,7 @@
         <div class="grid-2">
           <div class="field">
             <label for="desejadoAnoMin">Ano mínimo desejado</label>
-            <select id="desejadoAnoMin">
+            <select id="desejadoAnoMin" disabled>
               <option value="">Qualquer ano</option>
             </select>
           </div>
@@ -1043,6 +1045,16 @@
       return json.dados || [];
     }
 
+    async function consultarEstoqueMarca(marca, signal) {
+      const qs = new URLSearchParams({ action: "estoqueMarca", marca });
+      const resposta = await fetch(`${APPS_SCRIPT_URL}?${qs}`, { signal, cache: "no-store" });
+      const estoque = await resposta.json();
+      if (!resposta.ok || !estoque.ok || typeof estoque.disponivel !== "boolean") {
+        throw new Error("Estoque indisponível para consulta.");
+      }
+      return estoque.disponivel;
+    }
+
     function preencherSelect(selectEl, itens, placeholder, manterVazio = false) {
       selectEl.innerHTML = "";
       const opt0 = document.createElement("option");
@@ -1086,6 +1098,7 @@
       const elVersao = document.getElementById(`${prefixo}Versao`);
       const versoesPorBusca = new Map();
       let consultaVersoes = 0;
+      let consultaMarca;
 
       async function carregarVersoes() {
         const consulta = ++consultaVersoes;
@@ -1126,18 +1139,52 @@
         }
       }
 
-      elMarca.addEventListener("change", async () => {
+      const estadoEstoque = document.getElementById("estadoEstoqueMarca");
+      const repetirEstoque = document.getElementById("repetirEstoqueMarca");
+
+      async function carregarModelos() {
         consultaVersoes++;
+        consultaMarca?.abort();
+        const consulta = new AbortController();
+        consultaMarca = consulta;
         const marca = elMarca.value;
-        preencherSelect(elModelo, [], "Carregando modelos...");
-        preencherSelect(elAno, [], opcionalVersao ? "Qualquer ano" : "Selecione o modelo primeiro", opcionalVersao);
-        preencherSelect(elVersao, [], opcionalVersao ? "Qualquer versão" : "Selecione o ano primeiro", opcionalVersao);
+        preencherSelect(elModelo, [], marca ? "Carregando modelos..." : "Selecione a marca primeiro");
+        preencherSelect(elAno, [], opcionalVersao ? "Qualquer ano" : "Selecione o modelo primeiro");
+        preencherSelect(elVersao, [], opcionalVersao ? "Qualquer versão" : "Selecione o ano primeiro");
+        if (opcionalVersao) {
+          estadoEstoque.textContent = marca ? "Verificando anúncios desta marca…" : "";
+          repetirEstoque.hidden = true;
+        }
 
         if (!marca) return;
-        const modelos = await consultarCatalogo({ action: "modelos", marca });
-        if (elMarca.value !== marca) return;
-        preencherSelect(elModelo, modelos, "Selecione o modelo");
-      });
+        try {
+          if (opcionalVersao) {
+            const disponivel = await consultarEstoqueMarca(
+              marca, AbortSignal.any([consulta.signal, AbortSignal.timeout(15000)])
+            );
+            if (consulta.signal.aborted) return;
+            if (!disponivel) {
+              estadoEstoque.textContent = `Sem anúncios de ${marca} no estoque no momento. Escolha outra marca.`;
+              preencherSelect(elModelo, [], "Escolha outra marca");
+              return;
+            }
+            estadoEstoque.textContent = "Há anúncios desta marca no estoque.";
+          }
+          const modelos = await consultarCatalogo({ action: "modelos", marca });
+          if (consulta.signal.aborted) return;
+          preencherSelect(elModelo, modelos, modelos.length ? "Selecione o modelo" : "Sem modelos disponíveis");
+        } catch {
+          if (consulta.signal.aborted) return;
+          preencherSelect(elModelo, [], "Falha na consulta");
+          if (opcionalVersao) {
+            estadoEstoque.textContent = "A consulta falhou. Tente novamente.";
+            repetirEstoque.hidden = false;
+          }
+        }
+      }
+
+      elMarca.addEventListener("change", carregarModelos);
+      if (opcionalVersao) repetirEstoque.addEventListener("click", carregarModelos);
 
       elModelo.addEventListener("change", async () => {
         consultaVersoes++;
@@ -1259,6 +1306,11 @@
 
     document.getElementById("matchForm").addEventListener("submit", async (e) => {
       e.preventDefault();
+      const modelo = document.getElementById("desejadoModelo");
+      if (modelo.disabled || !modelo.value) {
+        document.getElementById("desejadoMarca").focus();
+        return;
+      }
       const cidade = cidadesPorNome.get(normalizarCidade(cidadeClienteEl.value));
       if (!cidade) {
         cidadeClienteEl.setCustomValidity("Informe um município do Rio Grande do Sul.");
@@ -1419,6 +1471,7 @@
       const carroNaTroca = tituloOferta({ modelo: [payload.atualMarca, payload.atualModelo].filter(Boolean).join(" "), ano: payload.atualAno });
       const textoTroca = payload.temCarro && carroNaTroca ? ` Tenho um ${carroNaTroca} para dar na troca.` : "";
       renderizarResumoSimulacao(payload, resposta.avaliacaoTroca, carroNaTroca);
+      observarFotos?.disconnect();
       lista.replaceChildren();
 
       if (matches.length > 0) {
@@ -1479,6 +1532,52 @@
       return [nome, ano >= 1900 && ano <= 2100 ? ano : ""].filter(Boolean).join(" ");
     }
 
+    const fotosPorCarregar = new WeakMap();
+    const observarFotos = typeof IntersectionObserver === "function" ? new IntersectionObserver(entradas => {
+      for (const entrada of entradas) {
+        if (!entrada.isIntersecting) continue;
+        observarFotos.unobserve(entrada.target);
+        fotosPorCarregar.get(entrada.target)?.();
+        fotosPorCarregar.delete(entrada.target);
+      }
+    }, { rootMargin: "160px" }) : null;
+
+    function criarFotosOferta(carro, nome) {
+      const area = document.createElement("div");
+      const mostrarIndisponivel = () => {
+        area.textContent = "Foto do anúncio indisponível.";
+        area.className = "helper";
+      };
+      async function recuperarFotos() {
+        if (!carro.url) {
+          mostrarIndisponivel();
+          return;
+        }
+        try {
+          const qs = new URLSearchParams({ anuncio: carro.url });
+          const resposta = await fetch(`/api/foto-anuncio?${qs}`, { signal: AbortSignal.timeout(8000) });
+          if (resposta.ok) {
+            const { fotos } = await resposta.json();
+            const galeria = window.criarGaleriaMatch?.(fotos, nome, mostrarIndisponivel);
+            if (galeria) {
+              area.replaceChildren(galeria);
+              return;
+            }
+          }
+        } catch {
+          // A oferta continua acessível enquanto a fonte das fotos está indisponível.
+        }
+        mostrarIndisponivel();
+      }
+      const galeria = window.criarGaleriaMatch?.(carro.fotos, nome, recuperarFotos);
+      if (galeria) area.append(galeria);
+      else if (carro.url && observarFotos) {
+        fotosPorCarregar.set(area, recuperarFotos);
+        observarFotos.observe(area);
+      } else recuperarFotos();
+      return area;
+    }
+
     function criarOferta({ carro, distanciaKm, cidade, cidadeDaLoja }, textoTroca) {
       const item = document.createElement("article");
       item.className = "match-item";
@@ -1502,10 +1601,8 @@
       preco.textContent = Number(carro.preco) > 0 ? formatarMoeda(carro.preco) : "Preço a confirmar";
       const loja = carro.loja ? ` da loja ${carro.loja}` : "";
       const mensagem = `Olá! Vi o ${nome}${loja} no VeícMatch. Ele ainda está disponível?${textoTroca} Gostaria de conversar sobre as condições de compra.`;
-      item.append(titulo);
-      const galeria = window.criarGaleriaMatch?.(carro.fotos, nome);
-      if (galeria) item.append(galeria);
-      item.append(meta, preco, criarLinkWhatsApp("Consultar no WhatsApp do atendimento", mensagem));
+      item.append(titulo, criarFotosOferta(carro, nome), meta, preco,
+        criarLinkWhatsApp("Consultar no WhatsApp do atendimento", mensagem));
       return item;
     }
 
@@ -1520,6 +1617,7 @@
       atualizarCamposTroca();
       situacaoQuitacaoEl.dispatchEvent(new Event("change"));
       cidadeClienteEl.setCustomValidity("");
+      observarFotos?.disconnect();
       for (const id of ["resumoSimulacao", "resumoFinanceiro", "listaMatches"]) document.getElementById(id).replaceChildren();
       document.getElementById("resultado").style.display = "none";
       document.getElementById("desejadoMarca").focus({ preventScroll: true });

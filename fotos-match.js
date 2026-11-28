@@ -89,7 +89,7 @@ window.criarGaleriaMatch = (() => {
     };
   }
 
-  return (fotos, nome) => {
+  return (fotos, nome, aoFalhar) => {
     if (!Array.isArray(fotos)) return null;
     const urls = [...new Set(fotos.flatMap(valor => {
       if (typeof valor !== 'string') return [];
@@ -114,7 +114,10 @@ window.criarGaleriaMatch = (() => {
     imagem.addEventListener('error', () => {
       capa++;
       if (capa < urls.length) imagem.src = urls[capa];
-      else imagem.remove();
+      else {
+        imagem.remove();
+        aoFalhar?.();
+      }
     });
     imagem.src = urls[0];
     botao.addEventListener('click', () => {
